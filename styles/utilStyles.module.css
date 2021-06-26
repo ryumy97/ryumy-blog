@@ -1,0 +1,20 @@
+.currentLink {
+    color: #ec0101;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.link { 
+    color: rgba(0,0,0,0.4);
+    font-weight: 500;
+    text-decoration: none;
+
+    transition: color 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.link:hover { 
+    color: #ec0101;
+    cursor: pointer;
+
+    transition: color 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
+}

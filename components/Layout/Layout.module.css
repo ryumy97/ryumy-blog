@@ -1,0 +1,19 @@
+.container {
+    max-width: 1080px;
+    margin: auto;
+}
+
+.title {
+    font-size: x-large;
+    color: black;
+    margin: 0;
+}
+
+.subHeading {
+    color: rgba(0,0,0,0.4);
+    font-style: italic;
+}
+
+.titleContainer {
+    width: fit-content;
+}
