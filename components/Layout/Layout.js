@@ -10,6 +10,8 @@ import utilStyles from '../../styles/utilStyles.module.css'
 export const siteTitle = "ryumy"
 
 export default function Layout({ title, date, children, link, category }) {
+    console.log(date && category);
+
     return (
         <>
             <Head>
@@ -36,7 +38,7 @@ export default function Layout({ title, date, children, link, category }) {
                             {date}
                         </date>
                     </Link>
-                    {date & category ? " | " : ""}
+                    {(date && category) ? " | " : ""}
                     <Link href={`/${category}`}>
                         <span className={`${styles.subHeading} ${utilStyles.link}`}>{category}</span>
                     </Link>
