@@ -6,12 +6,11 @@ import Divider from '../Divider'
 
 import styles from './Layout.module.css'
 import utilStyles from '../../styles/utilStyles.module.css'
+import { formatDate } from '../../util/date'
 
 export const siteTitle = "ryumy"
 
 export default function Layout({ title, date, children, link, category }) {
-    console.log(date && category);
-
     return (
         <>
             <Head>
@@ -28,15 +27,15 @@ export default function Layout({ title, date, children, link, category }) {
             <Divider spacing={16}/>
             <div className={styles.container}>
                 <div>
-                    <Link href={`/${link}`}>
-                        <div className={styles.titleContainer}>
+                    <Link href={`/${link ? link : ""}`}>
+                        <span className={styles.titleContainer}>
                             <h1 className={`${styles.title} ${utilStyles.link}`}>{title}</h1>
-                        </div>
+                        </span>
                     </Link>
                     <Link href="/date">
-                        <date className={`${styles.subHeading} ${utilStyles.link}`}>
-                            {date}
-                        </date>
+                        <span className={`${styles.subHeading} ${utilStyles.link}`}>
+                            {formatDate(date)}
+                        </span>
                     </Link>
                     {(date && category) ? " | " : ""}
                     <Link href={`/${category}`}>
@@ -44,7 +43,9 @@ export default function Layout({ title, date, children, link, category }) {
                     </Link>
                 </div>            
                 <Divider spacing={4}/>
-                {children}
+                <div className={styles.content}>
+                    {children}
+                </div>
             </div>
         </>
     )
