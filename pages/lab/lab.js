@@ -5,7 +5,7 @@ export default function lab() {
     return (
         <Layout 
             title="Lab"
-            date="2021/06/26"
+            date=""
             category="lab"
         >
             hello from lab
