@@ -32,15 +32,19 @@ export default function Layout({ title, date, children, link, category }) {
                             <h1 className={`${styles.title} ${utilStyles.link}`}>{title}</h1>
                         </span>
                     </Link>
-                    <Link href="/date">
+                    {date
+                    ? <Link href="/date">
                         <span className={`${styles.subHeading} ${utilStyles.link}`}>
                             {formatDate(date)}
                         </span>
                     </Link>
+                    : null}
                     {(date && category) ? " | " : ""}
-                    <Link href={`/${category}`}>
+                    {category
+                    ? <Link href={`/${category}`}>
                         <span className={`${styles.subHeading} ${utilStyles.link}`}>{category}</span>
                     </Link>
+                    : null}
                 </div>            
                 <Divider spacing={4}/>
                 <div className={styles.content}>
