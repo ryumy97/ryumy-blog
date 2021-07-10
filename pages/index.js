@@ -18,13 +18,15 @@ export default function Home() {
           </Article>
         )
       })}
-
-      <Link href={{
+      
+      {page != 1
+      ? <Link href={{
         pathname: '/',
         query: { page: 1 }
       }}>      
         <span className={utilStyles.link}>{"<<"}</span>
       </Link>
+      : null}
 
       {pageNumbers.map(_ => {
         console.log(page)
@@ -47,13 +49,15 @@ export default function Home() {
           </Link>
         )
       })}
-
-      <Link href={{
+      
+      {page != maxPage
+      ? <Link href={{
         pathname: '/',
         query: { page: maxPage }
       }}>      
         <span className={utilStyles.link}>{">>"}</span>
       </Link>
+      : null}
 
     </Layout>
   )
