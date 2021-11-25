@@ -1,0 +1,9 @@
+.pagination {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-evenly;
+    margin: auto;
+    max-width: 540px;
+    padding: 18px 18px 8px 18px;
+}

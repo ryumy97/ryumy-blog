@@ -21,6 +21,14 @@
   transition: color 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
 }
 
+.link.disable {
+  color: rgba(0, 0, 0, 0.4);
+  font-weight: 300;
+  font-size: small;
+  text-decoration: line-through;
+  pointer-events: none;
+}
+
 .grey_font {
   color:rgba(0, 0, 0, 0.6);
 }
