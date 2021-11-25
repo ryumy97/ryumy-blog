@@ -12,7 +12,7 @@ export default async function getPosts(req, res) {
 
     const count = await db
         .collection("posts")
-        .count();
+        .countDocuments();
 
     if ((page - 1) * postPerPage >= count) {
         res.status(500).json({

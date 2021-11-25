@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react'
-import Head from 'next/head'
+import React from 'react'
 import Layout from '../components/Layout'
 import { useBlogContext } from '../context/PostProvider'
 import Article from '../components/Article';
@@ -19,14 +18,12 @@ export default function Home() {
         )
       })}
       
-      {page != 1
-      ? <Link href={{
+      <Link href={{
         pathname: '/',
         query: { page: 1 }
       }}>      
-        <span className={utilStyles.link}>{"<<"}</span>
+        <span className={utilStyles.link}>{page != 1 ? "<<" : ''}</span>
       </Link>
-      : null}
 
       {pageNumbers.map(_ => {
         console.log(page)
@@ -50,14 +47,12 @@ export default function Home() {
         )
       })}
       
-      {page != maxPage
-      ? <Link href={{
+      <Link href={{
         pathname: '/',
         query: { page: maxPage }
       }}>      
-        <span className={utilStyles.link}>{">>"}</span>
+        <span className={utilStyles.link}>{page != maxPage ? ">>" : ''}</span>
       </Link>
-      : null}
 
     </Layout>
   )

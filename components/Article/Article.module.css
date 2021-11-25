@@ -2,25 +2,25 @@
     max-width: 1080px;
     padding: 0 120px;
     margin: auto;
-  }
+}
   
-  .title {
+.title {
     font-size: x-large;
     color: black;
     margin: 0;
-  }
-  
-  .subHeading {
+}
+
+.subHeading {
     color: rgba(0, 0, 0, 0.4);
     font-style: italic;
-  }
-  
-  .titleContainer {
+}
+
+.titleContainer {
     width: fit-content;
-  }
-  
-  .content {
+}
+
+.content {
     font-family: "Lato", sans-serif;
     font-size: small;
-  }
+}
   
