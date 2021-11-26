@@ -1,33 +1,66 @@
 import { useContext, useState, useEffect, createContext } from "react";
+import { useRouter } from 'next/router';
+import axios from 'axios'
 
 const BlogContext = createContext()
 
 export default function PostProvider({children}) {
     const [posts, setPosts] = useState([]);
-    
+    const [maxPage, setMaxPage] = useState(0);
+    const [pageNumbers, setPageNumbers] = useState([]);
+
+    const router = useRouter();
+    const { page } = router.query;
+
+    if (!page) {
+        router.query.page = 1;
+    }
+
     function getPosts() {
-        console.log("getPosts")
-        fetch("/api/blog-api")
-        .then(response => {
-            console.log(response)
-            return response.json()
+        axios.get("/api/blog-api", {
+            params: {
+                page: page
+            }
         })
-        .then(data => {
-            console.log("data")
-            console.log(data)
-            setPosts(data);
+        .then(response => {
+            const { maxPage, posts } = response.data;
+            setPosts(posts);
+            setMaxPage(maxPage);
         })
     }
 
     useEffect(() => {
-        getPosts();
-    }, [])
+        getPosts(page);
+    }, [page])
+
+    const pagination = () => {
+        let j = 0;
+        let pages = [];
+        for(let i = page - 2; i <= maxPage && i <= page + 5; i++) {
+            if (i < 1) {
+                continue;
+            }
+            j++;
+            pages.push(i);
+            if (j == 5) {
+                break;
+            }
+        }
+        return pages;
+    }
+
+    useEffect(() => {
+        setPageNumbers(pagination());
+    }, [maxPage])
 
     return (
         <BlogContext.Provider
             value={{
                 posts,
-                getPosts
+                getPosts,
+                page,
+                maxPage,
+                pageNumbers
             }}
         >
             {children}
@@ -37,7 +70,7 @@ export default function PostProvider({children}) {
 
 export function useBlogContext() {
     const blogContext = useContext(BlogContext);
-    console.log(blogContext)
+
     if (!blogContext) {
         throw Error("Need to wrap with Post Provider");
     }

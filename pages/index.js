@@ -1,21 +1,22 @@
-import React, { useEffect } from 'react'
-import Head from 'next/head'
+import React from 'react'
 import Layout from '../components/Layout'
 import { useBlogContext } from '../context/PostProvider'
+import Article from '../components/Article';
+import Pagination from '../components/Pagination';
 
 export default function Home() {
-  const { posts, getPosts } = useBlogContext();
+  const { posts, page, maxPage, pageNumbers } = useBlogContext();
 
   return (
-    <>
+    <Layout>
       {posts.map(({ title, category, createdAt, content, _id }) => {
-        console.log(createdAt)
         return (
-          <Layout key={_id} title={title} category={category} date={new Date(createdAt)}>
+          <Article key={_id} title={title} category={category} date={new Date(createdAt)}>
             {content}
-          </Layout>
+          </Article>
         )
       })}
-    </>
+      <Pagination page={page} pageNumbers={pageNumbers} maxPage={maxPage}/>
+    </Layout>
   )
 }

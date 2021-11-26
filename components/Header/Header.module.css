@@ -5,6 +5,7 @@
   justify-content: space-between;
   margin: auto;
   max-width: 1080px;
+  padding: 18px 18px 8px 18px;
 }
 
 .header {
@@ -12,14 +13,16 @@
   top: 0;
   z-index: 999;
   width: 100%;
+  
+  background-color: white;
 
-  transition: box-shadow 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+  transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
 }
 
 .header.shadow {
-  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0);
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.5);
 
-  transition: box-shadow 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+  transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
 }
 
 .header ul {
@@ -31,3 +34,4 @@
 .header ul li {
   padding: 0 12px;
 }
+
