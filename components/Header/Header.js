@@ -26,7 +26,7 @@ export default function Header({ siteTitle }) {
                 <Link href={'/'}>
                     <a className={`${utilStyles.link}`}>{siteTitle}.</a>
                 </Link>
-                <Menu list={["me","lab","log"]} />
+                <Menu list={["me","lab","log"]} isTop={isTop}/>
             </div>
         </header>
     )    

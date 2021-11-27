@@ -1,6 +1,6 @@
 import React from 'react'
-import MenuList from './MenuList'
+import MenuDrag from './MenuDrag'
 
-export default function Menu({list}) {
-    return (<MenuList list={list} />)
+export default function Menu({list, isTop}) {
+    return (<MenuDrag list={list} isTop={isTop}/>)
 }

@@ -8,12 +8,12 @@ import { formatDate } from '../../util/date'
 
 export default function Article({ title, date, children, link, category }) {
     return (
-        <div className={styles.container}>
+        <article className={styles.container}>
             <div>
                 <Link href={`/${link ? link : ""}`}>
-                    <span className={styles.titleContainer}>
+                    <div className={styles.titleContainer}>
                         <h1 className={`${styles.title} ${utilStyles.link}`}>{title}</h1>
-                    </span>
+                    </div>
                 </Link>
                 {date
                 ? <Link href="/date">
@@ -34,6 +34,6 @@ export default function Article({ title, date, children, link, category }) {
                 {children}
             </div>
             <Divider spacing={12}/>
-        </div>
+        </article>
     )
 }
