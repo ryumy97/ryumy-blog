@@ -1,0 +1,83 @@
+.menuDropDownContainer {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    
+    width: 100%;
+
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+
+}
+
+.menuDropDownContainer.top {
+    top: -125px;
+    
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.menuDropDownContainer.open {
+    top: 0px;
+
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.menuDrag.top {
+    top: 100px;
+    height: 90px;
+}
+
+.menuDrag.dragging {
+    transition: none;
+}
+
+.menuDrag.open {
+    top: 90px;
+    height: 30px;
+}
+
+.menuDrag {
+    position: absolute;
+    top: 125px;
+    right: 5%;
+    border-radius: 0px 0px 5px 5px;
+
+    box-shadow: 1px 1px 5px rgb(0 0 0 / 50%);
+
+    height: 30px;
+    min-width: 32px;
+
+    margin: auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    align-content: stretch;
+    
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.menuDrag .menuContainer {
+    position: absolute;
+    bottom: 0px;
+    left: 7px;
+    width: 18px;
+}
+
+.lastItem {
+    border-radius: 0px 0px 5px 5px;
+}
+
+.tail {
+    position: absolute;
+    width: 100%;
+    height: 100px;
+    top: -100px;
+    box-shadow: 1px 1px 5px rgb(0 0 0 / 50%);
+    display: flex;
+
+    z-index: -1;
+}
+
+.hamburger {
+    color: white;
+}

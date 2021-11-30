@@ -21,19 +21,19 @@ function MenuListItem({title, index}) {
 
     return (
         <li 
+            className={styles.listitem}
             key={`${title}${index}`}
             style={{
                 animationDelay: `${0.5 + 0.25*index}s`
             }}
         >
-            <Link href={`/${title}`} passHref>
-                
+            <Link href={`/${title}`} passHref shallow={true} >
                 <a 
                     className={`${
                         title === basePath
                             ? utilStyles.currentLink
-                            : utilStyles.link
-                        } ${utilStyles.white_font}`
+                            : `${utilStyles.link} ${utilStyles.white_font}`
+                        }`
                     }
                 >
                     {title}
