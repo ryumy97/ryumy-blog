@@ -34,7 +34,8 @@
 
     z-index: 1;
 
-    transition: top 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+    transition-delay: 0.01s;
 }
 
 .menuDropDown.open { 

@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { faBars } from '@fortawesome/free-solid-svg-icons'
 
-import { useMouseContext } from '../../../../context/MouseTracker';
+import { useMouseContext, faHandRock } from '../../../../context/MouseTracker';
 import ColorBox from '../../../ColorBox'
 
 import styles from './MenuDrag.module.css'
@@ -11,8 +11,10 @@ import styles from './MenuDrag.module.css'
 export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
     const { position } = useMouseContext();
     const [pressed, setPressed] = useState(false);
+    const [moved, setMoved] = useState(false);
     const [currentPosition, setCurrnetPosition] = useState({x: 0, y: 0});
     const [movedPosition, setMovedPosition] = useState({x: 0, y: 0});
+    const [clickEventOn, setClickEventOn] = useState(false);
     
     const draggerRef = useRef();
 
@@ -46,8 +48,11 @@ export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
     return (
         <div 
             ref= { draggerRef }
-            className={`${styles.menuDrag} ${isOpen ? styles.open : ''} ${isTop ? styles.top : ''} ${pressed ? styles.dragging : ''}`}
+            className={`${styles.menuDrag} ${isOpen ? styles.open : ''} ${isTop ? styles.top : ''} ${pressed ? styles.dragging : ''} ${clickEventOn ? styles.clickMenu : ''}`}
             onMouseDown={() => {
+                if (clickEventOn) {
+                    return
+                }
                 setPressed(true)
                 setCurrnetPosition({
                     x: position.x,
@@ -55,19 +60,49 @@ export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
                 })
             }}
             onMouseUp={() => {
+                if (clickEventOn) {
+                    return
+                }
+
                 setPressed(false)
                 setMovedPosition({x: 0, y: 0})
+
+                if (!moved) {
+                    console.log('clicked');
+
+                    setClickEventOn(true);
+                }
+                setMoved(false);
+            }}
+            onMouseMove={() => {
+                if (clickEventOn) {
+                    return
+                }
+                
+                if (pressed) {
+                    setMoved(true);
+                }
             }}
         >
             <div className={`${styles.tail}`}>            
-                <ColorBox color="#00BFA5"></ColorBox>
+                <ColorBox color="#311B92"></ColorBox>
             </div>
-            <ColorBox color="#00BFA5"></ColorBox>
-            <ColorBox color="#00E676"></ColorBox>
-            <ColorBox color="#7C4DFF" className={styles.lastItem}></ColorBox>
+            <ColorBox color="#512DA8"></ColorBox>
+            <ColorBox color="#673AB7"></ColorBox>
+            <ColorBox color="#7E57C2" className={styles.lastItem}></ColorBox>
             <div className={styles.menuContainer}>
                 <FontAwesomeIcon icon={faBars} className={styles.hamburger}/>                
             </div>
+            
+            {
+                clickEventOn
+                    ? <div
+                        className={styles.clickPointer}
+                        onAnimationEnd={() => {setClickEventOn(false)}}
+                        aria-hidden="true"
+                    ></div>
+                    : null
+            }
         </div>
     )
 }

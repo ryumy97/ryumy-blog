@@ -29,7 +29,7 @@ export default function Menu({list, isTop}) {
         <div 
             className={`${styles.menuDropDownContainer} ${isTop ? '' : styles.top} ${isOpen ? styles.open : ''} ${utilStyles.disableSelect}`}
         >    
-            <MenuDrag openMenu={openMenu} isOpen={isOpen} isTop={isTop} dropDownRef={dropDownRef}/>
+            <MenuDrag openMenu={openMenu} isOpen={isOpen} isTop={isTop} dropDownRef={dropDownRef} />
             <div 
                 className={`${styles.menuDropDown} ${isOpen ? styles.open : ''}`} 
                 ref={ dropDownRef }
