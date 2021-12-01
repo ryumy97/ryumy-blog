@@ -1,0 +1,60 @@
+.list {
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    padding: 0
+}
+
+.listitem {
+    margin: 0;
+}
+
+.list a {
+    font-size: x-large;
+    font-weight: 200;
+    padding: 24px;
+}
+
+.closed li {
+    animation-name: closing;
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+
+    opacity: 0;
+    transform: translateY(0);
+    
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.open li {
+    animation-name: opening;
+    animation-duration: 0.5s;
+    animation-fill-mode: both;
+
+    opacity: 0;
+    transform: translateY(0);
+    
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+@keyframes opening {
+    from {
+        opacity: 0;
+        transform: translateY(-50%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes closing {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-50%);
+    }
+}
