@@ -27,7 +27,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "install": "(cd server & yarn install)"
+    "install": "(cd server & yarn install)",
+    "heroku-prebuild": "yarn install"
   },
   "proxy": "http://localhost:3001",
   "eslintConfig": {
