@@ -1,25 +1,51 @@
 {
-  "name": "ryumy-blog",
+  "name": "app",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start -p $PORT"
-  },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
-    "@fortawesome/free-regular-svg-icons": "^5.15.4",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.1.16",
-    "axios": "^0.21.1",
-    "mongodb": "^3.6.9",
-    "next": "^12.0.4",
-    "react": "17.0.1",
-    "react-dom": "17.0.1",
-    "react-fontawesome": "^1.7.1"
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "axios": "^0.24.0",
+    "concurrently": "^6.4.0",
+    "env-cmd": "^10.1.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-helmet": "^6.1.0",
+    "react-router-dom": "^6.0.2",
+    "react-scripts": "4.0.3",
+    "web-vitals": "^1.0.1"
   },
-  "devDependencies": {
-    "eslint": "^8.3.0"
+  "scripts": {
+    "start:client": "react-scripts start",
+    "start:server": "cd server & yarn start",
+    "start": "env-cmd -f ./.env --use-shell yarn run build & (cd server & yarn start)",
+    "start:local": "concurrently --kill-others \"env-cmd -f ./.env.local --use-shell yarn start:server\" \"yarn start:client\"",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "install": "(cd server & yarn install)"
+  },
+  "proxy": "http://localhost:3001",
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

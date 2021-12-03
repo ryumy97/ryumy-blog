@@ -1,0 +1,195 @@
+.menuDropDownContainer {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    
+    width: 100%;
+
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+
+}
+
+.menuDropDownContainer.top {
+    top: -125px;
+    
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.menuDropDownContainer.open {
+    top: 0px;
+
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.menuDrag.top {
+    top: 100px;
+    height: 90px;
+}
+
+.menuDrag.dragging {
+    transition: none;
+}
+
+.menuDrag.dragging:hover {
+    cursor: grabbing;
+}
+
+.menuDrag.open {
+    top: 90px;
+    height: 30px;
+}
+
+.menuDrag.clickMenu {
+    animation: clickMenuAnimation 0.25s;
+}
+
+
+.menuDrag.clickMenu:hover {
+    cursor: auto;
+}
+
+@keyframes clickMenuAnimation {
+    0% {
+        transform: translateX(-10px);
+    }
+    50% {
+        transform: translateX(10px);
+    }
+    75% {
+        transform: translateX(-5px);
+    }
+
+}
+
+.menuDrag {
+    position: absolute;
+    top: 125px;
+    right: 5%;
+    border-radius: 0px 0px 5px 5px;
+
+    box-shadow: 1px 1px 5px rgb(0 0 0 / 50%);
+
+    height: 30px;
+    min-width: 32px;
+
+    margin: auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    align-content: stretch;
+    
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.menuDrag:hover {
+    cursor: grab;
+}
+
+.lastItem {
+    border-radius: 0px 0px 5px 5px;
+}
+
+.tail {
+    position: absolute;
+    width: 100%;
+    height: 100px;
+    top: -100px;
+    box-shadow: 1px 1px 5px rgb(0 0 0 / 50%);
+    display: flex;
+
+    z-index: -1;
+}
+
+.menuDrag .menuContainer {
+    position: absolute;
+    bottom: 0;
+    width: fit-content;
+    height: fit-content;
+    min-width: 32px;
+    min-height: 32px;
+
+    display: flex;
+}
+
+.hamburgerContainer {
+    margin: auto;
+}
+
+.hamburger {
+    margin: auto;
+    color: white;
+}
+
+.open .clickPointer {
+    position: absolute;
+    top: 15px;
+    left: 10px;
+}
+
+.clickPointer {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    top: 75px;
+    left: 10px;
+    opacity: 0;
+
+    animation: clickAnimation 1.5s ease-in-out 0.5s;
+}
+
+.clickPointer::before {
+    content: '\f245';
+    color: black;
+    
+    animation: clickAnimationFont 1.5s step-start 0.5s;
+}
+
+@keyframes clickAnimation {
+    0% {
+        transform: translate(-50px, 65px);
+    }
+    40% {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(0, 0);
+    }
+    80% {
+        transform: translate(0, 75px);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(0, 75px);
+    }
+
+}
+
+@keyframes clickAnimationFont {
+    0% {
+        content: '\f245';
+        color: black;
+    }
+    30% {
+        content: '\f245';
+        color: black;
+    }
+    45% {
+        content: '\f256';
+        color: white;
+
+    }
+    50% {
+        content: '\f255';
+        color: white;
+        -webkit-text-stroke-width: 1px;
+        -webkit-text-stroke-color: black;
+    }
+    100% {
+        content: '\f255';
+        color: white;
+        -webkit-text-stroke-width: 1px;
+        -webkit-text-stroke-color: black;
+    }
+}
