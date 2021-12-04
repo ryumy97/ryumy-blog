@@ -20,12 +20,21 @@ export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
 
     useEffect(() => {
         if (draggerRef.current) {
-            draggerRef.current.style.transform = `translate(${movedPosition.x}px, ${movedPosition.y}px)`   
+            if (isOpen) {
+                draggerRef.current.style.transform = `translateY(-100%)`   
+            }
+            else {
+                draggerRef.current.style.transform = `translate(${movedPosition.x}px, ${movedPosition.y}px)`   
+            }
+            
         }
-        if (dropDownRef) {
-            !isOpen ? dropDownRef.current.style.transform = `translateY(${movedPosition.y/3}px)` : dropDownRef.current.style.transform = `translateY(0px)`;
-        }   
-    }, [position, dropDownRef, isOpen, movedPosition.x, movedPosition.y])
+    }, [isOpen, movedPosition.x, movedPosition.y])
+
+    useEffect(() => {
+        if (dropDownRef.current) {
+            !isOpen ? dropDownRef.current.style.top = `${movedPosition.y/3}px` : dropDownRef.current.style.top = `0`;
+        }
+    }, [dropDownRef, isOpen, movedPosition.y])
 
     useEffect(() => {
         if (pressed) {
@@ -33,59 +42,71 @@ export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
                 x: position.x - currentPosition.x,
                 y: position.y - currentPosition.y
             })
-            
-            if (movedPosition.y > 75) {
+        }
+        
+    }, [position, currentPosition.x, currentPosition.y, pressed])
+
+    useEffect(() => {
+        if (pressed) {
+            if (movedPosition.y > 36) {
                 openMenu();
                 setPressed(false)
                 setMovedPosition({x: 0, y: 0})
             }
-
+        }
+    }, [pressed, movedPosition.y, openMenu])
+    
+    useEffect(() => {
+        if (pressed) {
             if (movedPosition.x > 100 || movedPosition.x < -100) {
                 setPressed(false)
                 setMovedPosition({x: 0, y: 0})
             }
         }
+    }, [pressed, movedPosition.x])
+
+    const onMouseDown = () => {
+        if (clickEventOn) {
+            return
+        }
+        setPressed(true)
+        setCurrnetPosition({
+            x: position.x,
+            y: position.y
+        })
+    }
+
+    const onMouseUp = () => {
+        if (clickEventOn) {
+            return
+        }
+
+        setPressed(false)
+        setMovedPosition({x: 0, y: 0})
+
+        if (!moved) {
+            setClickEventOn(true);
+        }
+        setMoved(false);
+    }
+
+    const onMouseMove = () => {
+        if (clickEventOn) {
+            return
+        }
         
-    }, [position, currentPosition.x, currentPosition.y, movedPosition.x, movedPosition.y, openMenu, pressed])
+        if (pressed) {
+            setMoved(true);
+        }
+    }
 
     return (
         <div 
             ref= { draggerRef }
             className={`${styles.menuDrag} ${isOpen ? styles.open : ''} ${isTop ? styles.top : ''} ${pressed ? styles.dragging : ''} ${clickEventOn ? styles.clickMenu : ''}`}
-            onMouseDown={() => {
-                if (clickEventOn) {
-                    return
-                }
-                setPressed(true)
-                setCurrnetPosition({
-                    x: position.x,
-                    y: position.y
-                })
-            }}
-            onMouseUp={() => {
-                if (clickEventOn) {
-                    return
-                }
-
-                setPressed(false)
-                setMovedPosition({x: 0, y: 0})
-
-                if (!moved) {
-                    console.log('clicked');
-
-                    setClickEventOn(true);
-                }
-                setMoved(false);
-            }}
-            onMouseMove={() => {
-                if (clickEventOn) {
-                    return
-                }
-                
-                if (pressed) {
-                    setMoved(true);
-                }
-            }}
+            onMouseDown={onMouseDown}
+            onMouseUp={onMouseUp}
+            onMouseMove={onMouseMove}
         >
             <div className={`${styles.tail}`}>            
                 <ColorBox color="#311B92"></ColorBox>
@@ -94,8 +115,8 @@ export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
             <ColorBox color="#673AB7"></ColorBox>
             <ColorBox color="#7E57C2" className={styles.lastItem}></ColorBox>
             <div className={styles.menuContainer}>
-                <div className={styles.hamburgerContainer}>
-                    <FontAwesomeIcon icon={faBars} className={styles.hamburger}/>   
+                <div className={styles.burgerContainer}>
+                    <FontAwesomeIcon icon={faBars} className={styles.burger}/>   
                 </div>             
             </div>
             

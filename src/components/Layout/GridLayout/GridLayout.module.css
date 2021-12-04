@@ -1,0 +1,17 @@
+@media (min-width: 1080px) {
+    .grid {
+        padding-left: 5vw;
+        padding-right: 5vw;
+    }
+
+}
+
+.grid {
+    display: grid;
+    margin: 0;
+    gap: 5vw;
+    row-gap: 0;
+    max-width: 100%;
+    justify-content: right;
+    grid-template-columns: repeat(4,1fr);
+}

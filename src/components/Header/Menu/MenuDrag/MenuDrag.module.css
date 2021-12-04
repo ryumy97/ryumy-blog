@@ -1,51 +1,58 @@
-.menuDropDownContainer {
+.menuDrag {
     position: absolute;
-    top: -100px;
-    left: 0;
+    bottom: 32px;
+    right: 10vw;
+    border-radius: 0px 0px 5px 5px;
+
+    box-shadow: 1px 1px 5px rgb(0 0 0 / 50%);
+
+    height: 96px;
+    min-width: 32px;
+
+    margin: auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    align-content: stretch;
+    justify-self: right;
     
-    width: 100%;
-
     transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
 
-}
+    grid-column-start: 4;
 
-.menuDropDownContainer.top {
-    top: -125px;
-    
-    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
-}
-
-.menuDropDownContainer.open {
-    top: 0px;
-
-    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+    user-select: none;
 }
 
 .menuDrag.top {
-    top: 100px;
-    height: 90px;
+    height: 96px;
+    bottom: -33px;
+}
+
+.menuDrag.open {
+    transform: translateY(-100%);
+    
+    transition: all 0.75s cubic-bezier(0.075, 0.82, 0.165, 1);
 }
 
 .menuDrag.dragging {
     transition: none;
 }
 
+.menuDrag:hover {
+    cursor: grab;
+}
+
 .menuDrag.dragging:hover {
     cursor: grabbing;
 }
 
-.menuDrag.open {
-    top: 90px;
-    height: 30px;
+.menuDrag.clickMenu:hover {
+    cursor: auto;
 }
 
 .menuDrag.clickMenu {
     animation: clickMenuAnimation 0.25s;
-}
-
-
-.menuDrag.clickMenu:hover {
-    cursor: auto;
 }
 
 @keyframes clickMenuAnimation {
@@ -61,35 +68,6 @@
 
 }
 
-.menuDrag {
-    position: absolute;
-    top: 125px;
-    right: 5%;
-    border-radius: 0px 0px 5px 5px;
-
-    box-shadow: 1px 1px 5px rgb(0 0 0 / 50%);
-
-    height: 30px;
-    min-width: 32px;
-
-    margin: auto;
-
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    align-content: stretch;
-    
-    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
-}
-
-.menuDrag:hover {
-    cursor: grab;
-}
-
-.lastItem {
-    border-radius: 0px 0px 5px 5px;
-}
-
 .tail {
     position: absolute;
     width: 100%;
@@ -101,7 +79,11 @@
     z-index: -1;
 }
 
-.menuDrag .menuContainer {
+.lastItem {
+    border-radius: 0px 0px 5px 5px;
+}
+
+.menuContainer {
     position: absolute;
     bottom: 0;
     width: fit-content;
@@ -112,26 +94,19 @@
     display: flex;
 }
 
-.hamburgerContainer {
+.burgerContainer {
     margin: auto;
 }
 
-.hamburger {
-    margin: auto;
+.burger {
     color: white;
-}
-
-.open .clickPointer {
-    position: absolute;
-    top: 15px;
-    left: 10px;
 }
 
 .clickPointer {
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     position: absolute;
-    top: 75px;
+    bottom: 0px;
     left: 10px;
     opacity: 0;
 
