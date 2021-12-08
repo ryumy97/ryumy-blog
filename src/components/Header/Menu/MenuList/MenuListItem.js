@@ -20,9 +20,9 @@ export default function MenuListItem({title, index}) {
                 to={`/${title}`}
                 className={`${
                     title === path.split('/')[1]
-                        ? utilStyles.currentLink
-                        : `${utilStyles.link} ${utilStyles.white_font}`
-                    }`}
+                        ? `${utilStyles.currentLink}`
+                        : ``
+                    } ${styles.menuLink}`}
             >
                 {title}
             </Link>

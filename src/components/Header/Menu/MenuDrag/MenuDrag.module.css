@@ -6,7 +6,7 @@
 
     box-shadow: 1px 1px 5px rgb(0 0 0 / 50%);
 
-    height: 96px;
+    height: 32px;
     min-width: 32px;
 
     margin: auto;
@@ -19,14 +19,11 @@
     
     transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
 
-    grid-column-start: 4;
-
     user-select: none;
 }
 
 .menuDrag.top {
-    height: 96px;
-    bottom: -33px;
+    bottom: 0px;
 }
 
 .menuDrag.open {

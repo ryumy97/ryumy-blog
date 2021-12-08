@@ -1,35 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
+
+import { useMenuContext } from './../../../context/MenuProvider'
+
 import MenuDrag from './MenuDrag'
 import MenuList from './MenuList'
+import MenuClose from './MenuClose'
 import { GridLayout } from '../../Layout'
 
 import styles from './Menu.module.css'
-import MenuClose from './MenuClose'
 
-export default function Menu({list, isTop}, ref) {
-    const [isOpen, setIsOpen] = useState(false);
+export default function Menu({list}) {
+    const { isTop, isOpen, openMenu, closeMenu } = useMenuContext();
 
     const MenuRef = useRef();
-
-    const openMenu = () => {
-        if (isTop) {
-            setIsOpen(prev => !prev);
-        }
-        else {
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-    }
-
-    const closeMenu = () => {
-        setIsOpen(false);
-    }
-    
-    useEffect(() => {
-        if (!isTop) {
-            setIsOpen(false)
-        }
-    }, [isTop])
-
 
     return (
         <>

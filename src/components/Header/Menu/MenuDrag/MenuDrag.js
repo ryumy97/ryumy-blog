@@ -6,10 +6,11 @@ import { useMouseContext } from '../../../../context/MouseTracker';
 import ColorBox from '../../../ColorBox'
 
 import styles from './MenuDrag.module.css'
+import gridStyles from '../../../Layout/GridLayout/GridLayout.module.css'
 
 
 export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
-    const { position } = useMouseContext();
+    const { position, click } = useMouseContext();
     const [pressed, setPressed] = useState(false);
     const [moved, setMoved] = useState(false);
     const [currentPosition, setCurrnetPosition] = useState({x: 0, y: 0});
@@ -65,6 +66,22 @@ export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
         }
     }, [pressed, movedPosition.x])
 
+    useEffect(() => {
+        if (!click) {
+            if (clickEventOn) {
+                return
+            }
+    
+            setMovedPosition({x: 0, y: 0})
+    
+            if (pressed && !moved) {
+                setClickEventOn(true);
+            }
+            setPressed(false)
+            setMoved(false);
+        }
+    }, [click, clickEventOn, pressed, moved])
+
     const onMouseDown = () => {
         if (clickEventOn) {
             return
@@ -74,20 +91,6 @@ export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
             x: position.x,
             y: position.y
         })
-    }
-
-    const onMouseUp = () => {
-        if (clickEventOn) {
-            return
-        }
-
-        setPressed(false)
-        setMovedPosition({x: 0, y: 0})
-
-        if (!moved) {
-            setClickEventOn(true);
-        }
-        setMoved(false);
     }
 
     const onMouseMove = () => {
@@ -103,17 +106,14 @@ export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
     return (
         <div 
             ref= { draggerRef }
-            className={`${styles.menuDrag} ${isOpen ? styles.open : ''} ${isTop ? styles.top : ''} ${pressed ? styles.dragging : ''} ${clickEventOn ? styles.clickMenu : ''}`}
+            className={`${styles.menuDrag} ${isOpen ? styles.open : ''} ${isTop ? styles.top : ''} ${pressed ? styles.dragging : ''} ${clickEventOn ? styles.clickMenu : ''} ${gridStyles.column_start_4}`}
             onMouseDown={onMouseDown}
-            onMouseUp={onMouseUp}
             onMouseMove={onMouseMove}
         >
             <div className={`${styles.tail}`}>            
-                <ColorBox color="#311B92"></ColorBox>
+                <ColorBox color="#fa5959"></ColorBox>
             </div>
-            <ColorBox color="#512DA8"></ColorBox>
-            <ColorBox color="#673AB7"></ColorBox>
-            <ColorBox color="#7E57C2" className={styles.lastItem}></ColorBox>
+            <ColorBox color="#fa5959" className={styles.lastItem}></ColorBox>
             <div className={styles.menuContainer}>
                 <div className={styles.burgerContainer}>
                     <FontAwesomeIcon icon={faBars} className={styles.burger}/>   

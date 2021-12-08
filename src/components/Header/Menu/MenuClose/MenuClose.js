@@ -6,7 +6,7 @@ export default function MenuClose({closeMenu, isOpen}) {
     const closeIconTopToBottomRef = useRef();
     const closeIconBottomToTopRef = useRef();
 
-    const menuCloseWidth = Math.sqrt(Math.pow(24, 2) + Math.pow(24, 2));
+    const menuCloseWidth = Math.sqrt(Math.pow(16, 2) + Math.pow(16, 2));
 
     useEffect(() => {
         if (closeIconTopToBottomRef.current) {
