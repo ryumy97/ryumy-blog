@@ -1,7 +1,28 @@
+* { 
+  box-sizing: border-box;
+}
 body {
   font-family: "Roboto", sans-serif;
   font-weight: 200;
   background-color: #fff;
 
-  margin: 0px;
+  margin: 0;
+  
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+
+  width: 100%;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+a:-webkit-any-link {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.fullScreen {
+  width: 100%;
 }

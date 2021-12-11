@@ -1,0 +1,12 @@
+.logoWrapper {
+    display: inline-block;
+    position: relative;
+    bottom: 0;
+    left: 0;
+
+    z-index: 100;
+}
+
+.logoWrapper a {
+    font-size: large;
+}

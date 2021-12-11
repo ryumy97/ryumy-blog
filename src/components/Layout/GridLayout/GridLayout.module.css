@@ -1,0 +1,33 @@
+@media (min-width: 1080px) {
+    .grid {
+        padding-left: 5vw;
+        padding-right: 5vw;
+    }
+
+}
+
+.grid {
+    display: grid;
+    margin: 0;
+    gap: 5vw;
+    row-gap: 0;
+    max-width: 100%;
+    justify-content: right;
+    grid-template-columns: repeat(4,1fr);
+}
+
+.column_start_1 {
+    grid-column-start: 1;
+}
+
+.column_start_2 {
+    grid-column-start: 2;
+}
+
+.column_start_3 {
+    grid-column-start: 3;
+}
+
+.column_start_4 {
+    grid-column-start: 4;
+}

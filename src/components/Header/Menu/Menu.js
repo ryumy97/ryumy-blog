@@ -1,41 +1,41 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
+
+import { useMenuContext } from './../../../context/MenuProvider'
+
 import MenuDrag from './MenuDrag'
 import MenuList from './MenuList'
+import MenuClose from './MenuClose'
+import { GridLayout } from '../../Layout'
 
 import styles from './Menu.module.css'
-import utilStyles from '../../../styles/utilStyles.module.css'
 
-export default function Menu({list, isTop}) {
-    const [isOpen, setOpen] = useState(false)
-    const dropDownRef = useRef();
+export default function Menu({list}) {
+    const { isTop, isOpen, openMenu, closeMenu } = useMenuContext();
 
-    const openMenu = () => {
-        if (isTop) {
-            setOpen(prev => !prev);
-        }
-        else {
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-    }
+    const MenuRef = useRef();
 
-    useEffect(() => {
-        if (!isTop) {
-            setOpen(false)
-        }
-    }, [isTop])
-
-    
     return (
-        <div 
-            className={`${styles.menuDropDownContainer} ${isTop ? '' : styles.top} ${isOpen ? styles.open : ''} ${utilStyles.disableSelect}`}
-        >    
-            <MenuDrag openMenu={openMenu} isOpen={isOpen} isTop={isTop} dropDownRef={dropDownRef} />
-            <div 
-                className={`${styles.menuDropDown} ${isOpen ? styles.open : ''}`} 
-                ref={ dropDownRef }
-            >
-                <MenuList list={list} isOpen={isOpen} ></MenuList>
+        <>
+            <div className={`${styles.menuDropDownContainer} ${isTop ? styles.isTop : ''} ${isOpen ? styles.isOpen : ''}`}>
+                <GridLayout
+                    ref={MenuRef}
+                    className={styles.menuDropDownGrid}
+                >
+                    <MenuList list={list} isOpen={isOpen}></MenuList>
+                </GridLayout>
             </div>
-        </div>
+
+            <MenuClose
+                closeMenu={closeMenu}
+                isOpen={isOpen}
+            />
+            
+            <MenuDrag 
+                openMenu={openMenu}
+                isOpen={isOpen}
+                isTop={isTop}
+                dropDownRef={MenuRef}
+            />
+        </>
     )
 }

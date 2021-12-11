@@ -1,37 +1,44 @@
-.headerContainer {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  margin: auto;
-  max-width: 1080px;
-  padding: 18px 18px 16px 18px;
+.headerLayout {
+  position: fixed;
+  top: 40px;
 }
 
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 999;
-  width: 100%;
+.logo::before {
+  content: "";
+  position: absolute;
+  top: calc(50% + 1px);
+  left: -6vw;
+  background-color: #fa5959;
+  width: 5vw;
+  height: 1px;
   
-  background-color: white;
-
-  transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+  transition: background-color 0.25s cubic-bezier(0.5, 0.5, 0.46, 0.93) 0.25s;
 }
 
-.header.shadow {
-  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.5);
+.logo.open::before {
+  background-color: #ffffff;
 
-  transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+  transition: background-color 0.25s cubic-bezier(0.5, 0.5, 0.46, 0.93) 0.25s;
 }
 
-.header ul {
-  display: flex;
-  margin: 0;
-  list-style: none;
+.logo a {
+  transition: color 0.25s cubic-bezier(0.5, 0.5, 0.46, 0.93) 0.25s;
 }
 
-.header ul li {
-  padding: 0 12px;
+.logo.open a {
+  color: #ffffff;
 }
 
+.logo.open a:hover {
+  color: #fa5959;
+}
+
+.top {
+  transition: transform 0.25s cubic-bezier(0.5, 0.5, 0.46, 0.93);
+}
+
+.notTop {
+  transform: translateY(-80px);
+
+  transition: transform 0.25s cubic-bezier(0.5, 0.5, 0.46, 0.93) 0.25s;
+}

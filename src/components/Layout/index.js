@@ -1,3 +1,4 @@
-import Layout from "./Layout";
+import PageLayout from './PageLayout';
+import GridLayout from './GridLayout';
 
-export default Layout;
+export { PageLayout, GridLayout };

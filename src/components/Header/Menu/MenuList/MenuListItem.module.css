@@ -1,0 +1,29 @@
+.listitem {
+    padding-bottom: 12px;
+    margin: 0;
+}
+
+.menuLink {
+    padding: 0;
+    margin: 0;
+    border: 0;
+
+    font-size: calc(47.251px + .66401vw);
+    font-weight: 400;
+    
+    user-select: none;
+
+    line-height: 1.1;
+    
+    letter-spacing: -.05em;
+
+    vertical-align: baseline;
+
+    text-transform: capitalize;
+    
+    color: #ffffff;
+}
+
+.menuLink:hover {
+    color: #fa5959;
+}

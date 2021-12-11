@@ -1,0 +1,134 @@
+.menuClose {
+    display: flex;
+    justify-content: flex-end;
+
+    grid-column-start: 4;
+    
+
+    z-index: 100;
+
+}
+
+.closed {
+    transform: translateY(-7vw);
+
+    z-index: 100;
+    transition: transform 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+
+.closeIconContainer {
+    position: relative;
+
+    width: 16px;
+    height: 16px;
+
+    z-index: 100;
+
+    cursor: pointer;
+}
+
+.closeIconTop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+
+    background-color: black;
+}
+
+.closeIconBottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    
+    background-color: black;
+}
+
+.closeIconTopToBottom {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 2px;
+    
+    background-color: black;
+    
+    transform: translate(-5px, 7px) rotate(45deg);
+}
+
+.closeIconBottomToTop {
+    
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 16x;
+    height: 2px;
+    
+    background-color: black;
+    
+    transform: translate(-5px, -7px) rotate(-45deg);
+}
+
+.open .closeIconTop {
+    animation: openCloseIconAnimation 0.75s cubic-bezier(0.075, 0.82, 0.165, 1) 0.5s both;
+}
+
+.open .closeIconBottom {
+    animation: openCloseIconAnimation 0.85s cubic-bezier(0.075, 0.82, 0.165, 1) 0.5s both;
+}
+
+@keyframes openCloseIconAnimation {
+    0% {
+        transform: translateX(-26px);
+        width: 0;
+        opacity: 0;
+    }
+    50% {
+        transform: translateX(-16px);
+        width: 16px;
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0);
+        width: 0;
+        opacity: 1;
+    }
+}
+
+.open .closeIconTopToBottom {
+    animation: openCloseIconTopToBottomAnimation 0.75s cubic-bezier(0.075, 0.82, 0.165, 1) 0.5s both;
+}
+
+.open .closeIconBottomToTop {
+    animation: openCloseIconBottomToTopAnimation 0.75s cubic-bezier(0.075, 0.82, 0.165, 1) 0.6s both;
+}
+
+@keyframes openCloseIconBottomToTopAnimation {
+    0% {
+        width: 0;
+    }
+    50% {
+        width: 0;
+        transform: translate(0px, 0px) rotate(-45deg);
+    }
+    100% {    
+        transform: translate(-5px, -7px) rotate(-45deg);
+    }
+}
+
+@keyframes openCloseIconTopToBottomAnimation {
+    0% {
+        width: 0;
+    }
+    50% {
+        width: 0;
+        transform: translate(0px, 0px) rotate(45deg);
+    }
+    100% {    
+        transform: translate(-5px, 7px) rotate(45deg);
+    }
+}

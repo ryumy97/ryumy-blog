@@ -1,33 +1,41 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import React from 'react'
+
+import MenuProvider, { useMenuContext } from './../../context/MenuProvider'
 
 import Menu from './Menu'
+import Logo from './Logo'
+import { GridLayout } from '../Layout'
 
 import styles from './Header.module.css'
+import gridStyles from '../Layout/GridLayout/GridLayout.module.css'
 import utilStyles from '../../styles/utilStyles.module.css'
 
 export default function Header({ siteTitle }) {
-    const [isTop, setIsTop] = useState(true)
-
-    useEffect(() => {
-        document.addEventListener('scroll', () => {
-            if (window.scrollY > 200) {
-                setIsTop(false)
-            }
-            else if(window.scrollY < 200) {
-                setIsTop(true)
-            }
-        })
-    }, [])
-
     return (
-        <header className={isTop ? styles.header : `${styles.header} ${styles.shadow}`}>
-            <div className={styles.headerContainer}>
-                <Link to={'/'} className={`${utilStyles.link}`}>
-                    {siteTitle}.
-                </Link>
-                <Menu list={["me","lab","log"]} isTop={isTop}/>
-            </div>
+        <header>
+            <MenuProvider>
+                <HeaderContainer siteTitle={siteTitle} />
+            </MenuProvider>
         </header>
     )    
+}
+
+function HeaderContainer({siteTitle}) {
+    const { isOpen, isTop } = useMenuContext();
+    
+    return (
+        <GridLayout className={`${styles.headerLayout}`}>
+            <Logo
+                siteTitle={siteTitle}
+                className={`${styles.logo} ${isTop ? styles.top : styles.notTop} ${isOpen ? styles.open : ''}`}
+            ></Logo>
+            <div className={`${utilStyles.grey_font} ${gridStyles.column_start_3} ${isTop ? styles.top : styles.notTop}`}>
+                In Ha Ryu's personal blog
+            </div>
+            <Menu 
+                list={["me","lab","log"]}
+            />
+        </GridLayout>
+    )
+
 }
