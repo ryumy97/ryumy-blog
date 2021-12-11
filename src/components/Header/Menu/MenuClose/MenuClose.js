@@ -23,9 +23,11 @@ export default function MenuClose({closeMenu, isOpen}) {
     return (
         <div
             className={`${styles.menuClose} ${isOpen ? styles.open : styles.closed}`}
-            onClick={closeMenu}
         >
-            <div className={styles.closeIconContainer}>
+            <div
+                className={styles.closeIconContainer}            
+                onClick={closeMenu}
+            >
                 <div className={styles.closeIconTop}/>
                 <div className={styles.closeIconBottom}/>
                 <div ref={closeIconTopToBottomRef} className={styles.closeIconTopToBottom}/>
