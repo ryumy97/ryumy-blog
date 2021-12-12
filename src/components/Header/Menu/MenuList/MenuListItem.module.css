@@ -21,9 +21,6 @@
 
     text-transform: capitalize;
     
-    color: #ffffff;
-}
-
-.menuLink:hover {
-    color: #fa5959;
+    cursor: pointer;
+    text-decoration: none;
 }

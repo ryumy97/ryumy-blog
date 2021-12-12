@@ -4,9 +4,7 @@
 
     grid-column-start: 4;
     
-
     z-index: 100;
-
 }
 
 .closed {
@@ -34,8 +32,6 @@
     left: 0;
     width: 0;
     height: 2px;
-
-    background-color: black;
 }
 
 .closeIconBottom {
@@ -44,8 +40,6 @@
     left: 0;
     width: 0;
     height: 2px;
-    
-    background-color: black;
 }
 
 .closeIconTopToBottom {
@@ -54,8 +48,6 @@
     left: 0;
     width: 16px;
     height: 2px;
-    
-    background-color: black;
     
     transform: translate(-5px, 7px) rotate(45deg);
 }
@@ -67,8 +59,6 @@
     left: 0;
     width: 16x;
     height: 2px;
-    
-    background-color: black;
     
     transform: translate(-5px, -7px) rotate(-45deg);
 }

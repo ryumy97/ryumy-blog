@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { toSearchParam } from '../../util/params'
 
 import styles from './Pagination.module.css'
-import utilStyles from '../../styles/utilStyles.module.css'
+import utilStyles from 'styles/utilStyles.module.css'
 
 export default function Pagination({ page, pageNumbers, maxPage }) {
     return (

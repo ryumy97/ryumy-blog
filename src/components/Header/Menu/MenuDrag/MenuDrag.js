@@ -2,14 +2,18 @@ import React, {useState, useEffect, useRef} from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 
-import { useMouseContext } from '../../../../context/MouseTracker';
-import ColorBox from '../../../ColorBox'
+import { useMouseContext } from 'context/MouseTracker';
+import { useTheme } from 'context/ThemeProvider';
+
+import ColorBox from 'components/ColorBox'
 
 import styles from './MenuDrag.module.css'
-import gridStyles from '../../../Layout/GridLayout/GridLayout.module.css'
+import gridStyles from 'styles/grid.module.css'
 
 
 export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
+    const { currentTheme } = useTheme();
+
     const { position, click } = useMouseContext();
     const [pressed, setPressed] = useState(false);
     const [moved, setMoved] = useState(false);
@@ -111,12 +115,12 @@ export default function MenuDrag({openMenu, isOpen, isTop, dropDownRef}) {
             onMouseMove={onMouseMove}
         >
             <div className={`${styles.tail}`}>            
-                <ColorBox color="#fa5959"></ColorBox>
+                <ColorBox color={currentTheme.primary}></ColorBox>
             </div>
-            <ColorBox color="#fa5959" className={styles.lastItem}></ColorBox>
+            <ColorBox color={currentTheme.primary} className={styles.lastItem}></ColorBox>
             <div className={styles.menuContainer}>
                 <div className={styles.burgerContainer}>
-                    <FontAwesomeIcon icon={faBars} className={styles.burger}/>   
+                    <FontAwesomeIcon icon={faBars} style={{color: currentTheme.white}} className={styles.burger}/>   
                 </div>             
             </div>
             

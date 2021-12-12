@@ -6,28 +6,31 @@ import { Helmet } from 'react-helmet';
 
 import PostProvider from './context/PostProvider';
 import MouseTracker from './context/MouseTracker';
+import ThemeProvider from './context/ThemeProvider';
 
-import Home from './pages/home';
+import Pages from './pages';
 
 import { siteTitle } from './constants';
 
 function App() { 
   return (
     <Router>
-      <PostProvider>
-        <MouseTracker>
-          <Helmet>
-            <title>{siteTitle}</title>
-            <meta
-                name="description"
-                content="In Ha Ryu"
-            />
-            <meta name="og:title" content={siteTitle}/>
-            <meta name="twitter:card" content="summar_large_image"/>
-          </Helmet>
-          <Home></Home>
-        </MouseTracker>
-      </PostProvider>
+      <ThemeProvider>
+        <PostProvider>
+          <MouseTracker>
+            <Helmet>
+              <title>{siteTitle}</title>
+              <meta
+                  name="description"
+                  content="In Ha Ryu"
+              />
+              <meta name="og:title" content={siteTitle}/>
+              <meta name="twitter:card" content="summar_large_image"/>
+            </Helmet>
+            <Pages />
+          </MouseTracker>
+        </PostProvider>
+      </ThemeProvider>
     </Router>
   );
 }
