@@ -8,6 +8,7 @@ import PostProvider from './context/PostProvider';
 import MouseTracker from './context/MouseTracker';
 import ThemeProvider from './context/ThemeProvider';
 
+import TransitionLayer from './components/TransitionLayer'
 import Pages from './pages';
 
 import { siteTitle } from './constants';
@@ -27,6 +28,7 @@ function App() {
               <meta name="og:title" content={siteTitle}/>
               <meta name="twitter:card" content="summar_large_image"/>
             </Helmet>
+            <TransitionLayer />
             <Pages />
           </MouseTracker>
         </PostProvider>

@@ -42,6 +42,16 @@ export default function ThemeProvider({children}) {
         console.log(theme);
     };
 
+    const getRandomTheme = () => {
+        const themeNames = Object.keys(themes).filter((name) => {
+            return name !== theme;
+        });
+
+        const randomNumber = Math.floor(Math.random() * themeNames.length);
+
+        return themeNames[randomNumber];
+    }
+
     return (
         <ThemeContext.Provider
             value={{
@@ -49,7 +59,8 @@ export default function ThemeProvider({children}) {
                 currentTheme: {
                     ...common,
                     ...themes[theme]
-                } 
+                },
+                getRandomTheme
             }}
         >
             <DefaultStyles currentTheme={{
