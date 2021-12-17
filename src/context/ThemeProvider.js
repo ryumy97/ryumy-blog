@@ -38,18 +38,20 @@ export default function ThemeProvider({children}) {
     const setTheme = (mode) => {
         window.localStorage.setItem('theme', mode);
         setThemeState(mode);
-        
-        console.log(theme);
     };
 
-    const getRandomTheme = () => {
-        const themeNames = Object.keys(themes).filter((name) => {
-            return name !== theme;
-        });
+    const getNextTheme = () => {
+        const themeNames = Object.keys(themes);
+        const themeIndex = themeNames.indexOf(theme);
+        const nextKeyName = themeNames.length === themeIndex + 1
+            ? themeNames[0]
+            : themeNames[themeIndex + 1];
 
-        const randomNumber = Math.floor(Math.random() * themeNames.length);
-
-        return themeNames[randomNumber];
+        return {
+            ...common,
+            ...themes[nextKeyName],
+            key: nextKeyName
+        };
     }
 
     return (
@@ -58,9 +60,10 @@ export default function ThemeProvider({children}) {
                 setTheme,
                 currentTheme: {
                     ...common,
-                    ...themes[theme]
+                    ...themes[theme],
+                    key: theme
                 },
-                getRandomTheme
+                getNextTheme
             }}
         >
             <DefaultStyles currentTheme={{

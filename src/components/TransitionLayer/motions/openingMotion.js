@@ -100,8 +100,6 @@ export function openingMotion(ctx, progress, theme, wave) {
         wave = new Wave(width, height);
     }
     
-    console.log(wave)
-    
     wave.update(height - currentHeight);
     wave.draw(ctx, { stageWidth: width, stageHeight: height });
 

@@ -1,35 +1,57 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom';
 
 import { useTheme } from 'context/ThemeProvider';
+import { useMenuContext } from 'context/MenuProvider';
 
-import { openingMotion, resetOpening, closingMotion } from './motions';
+import { openingMotion, closingMotion } from './motions';
 
 import styles from './TransitionLayer.module.css'
 import Canvas from '../Canvas/Canvas';
 
 export default function TransitionLayer() {
-    const { setTheme, currentTheme, getRandomTheme } = useTheme();
-    const [opening, setOpening] = useState(true);
+    const { setTheme, getNextTheme } = useTheme();
+    const { pathname } = useLocation();
+    const { closeMenu, isOpen } = useMenuContext();
+
+    const [nextTheme, setNextTheme] = useState(getNextTheme());
+    const [opening, setOpening] = useState(false);
     const [closed, setClosed] = useState(false);
+    const [prevPath, setPrevPath] = useState(pathname);
+
+    useEffect(() => {
+        if (isOpen) {
+            setPrevPath(pathname);
+            if (prevPath !== pathname) {
+                setOpening(true);
+                setClosed(false);
+                setNextTheme(getNextTheme());
+            }
+        }
+    }, [isOpen, prevPath, pathname, getNextTheme])
 
     let wave = null;
 
     const draw = (ctx, frameCount, { resetFrameCount }) => {
         if (closed) {
+            resetFrameCount();
             return
         }
-        if (opening) {             
-            const progress = frameCount/60;
-            wave = openingMotion(ctx, progress < 1 ? progress : 1, currentTheme, wave);
+        if (opening) {
+            const progress = frameCount / 60;
+            wave = openingMotion(ctx, progress < 1 ? progress : 1, nextTheme, wave);
             if (progress > 2) {
                 setOpening(false);
+                closeMenu();
+                setTheme(nextTheme.key);
             }
         }
         else {
-            const progress = frameCount/30 - 1;
-            closingMotion(ctx, progress < 1 ? progress : 1, currentTheme);
+            const progress = frameCount/30 - 0.25;
+            closingMotion(ctx, progress < 1 ? progress : 1, nextTheme);
             if (progress > 1) {
                 setClosed(true)
+                resetFrameCount();
             }
         }
     }

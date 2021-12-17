@@ -7,6 +7,6 @@
     z-index: 100;
 }
 
-.logoWrapper a {
+.logoWrapper * {
     font-size: large;
 }

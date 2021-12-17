@@ -9,23 +9,29 @@ export default function Canvas({draw, resetFrameCount, resizeCanvas, ...rest}) {
 
         let frameCount = 0;
         let animationFrameId;
+        let endRender = false;
 
         const resetFrameCount = () => {
             frameCount = 0;
         }
 
         const render = () => {
+            if (endRender) {
+                return
+            }
+
             frameCount++;
 
             resizeCanvasEvent(canvas, resizeCanvas);
             draw(ctx, frameCount, { resetFrameCount });
-
+            
             animationFrameId = window.requestAnimationFrame(render);
         }
         render();
 
         return () => {
             window.cancelAnimationFrame(animationFrameId)
+            endRender = true;
         }
 
     }, [draw, resizeCanvas])
@@ -44,7 +50,7 @@ function resizeCanvasEvent(canvas, resizeCanvas) {
       context.scale(ratio, ratio)
 
       resizeCanvas();
-      
+
       return true
     }
 

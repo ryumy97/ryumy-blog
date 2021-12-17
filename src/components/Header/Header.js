@@ -1,6 +1,6 @@
 import React from 'react'
 
-import MenuProvider, { useMenuContext } from 'context/MenuProvider'
+import { useMenuContext } from 'context/MenuProvider'
 import { useTheme } from 'context/ThemeProvider'
 
 import Menu from './Menu'
@@ -14,9 +14,7 @@ import utilStyles from 'styles/utilStyles.module.css'
 export default function Header({ siteTitle }) {
     return (
         <header>
-            <MenuProvider>
-                <HeaderContainer siteTitle={siteTitle} />
-            </MenuProvider>
+            <HeaderContainer siteTitle={siteTitle} />
         </header>
     )    
 }
@@ -35,10 +33,10 @@ function HeaderContainer({siteTitle}) {
                     .${styles.logo}.${styles.open}::before {
                         background-color: ${currentTheme.white};
                     }
-                    .${styles.logo}.${styles.open} a {
+                    .${styles.logo}.${styles.open} * {
                         color: ${currentTheme.white};
                     }
-                    .${styles.logo}.${styles.open} a:hover {
+                    .${styles.logo}.${styles.open} *:hover {
                         color: ${currentTheme.lightPrimary};
                     }
                 `}

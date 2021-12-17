@@ -8,7 +8,7 @@ export default function MenuProvider({children}) {
     
     const openMenu = () => {
         if (isTop) {
-            setIsOpen(prev => !prev);
+            setIsOpen(true);
         }
         else {
             window.scrollTo({top: 0, behavior: 'smooth'});

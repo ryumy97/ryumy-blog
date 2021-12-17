@@ -23,7 +23,6 @@ export default function Menu({list}) {
                 style={{backgroundColor: currentTheme.primary}}
             >
                 <GridLayout
-                    ref={MenuRef}
                     className={styles.menuDropDownGrid}
                 >
                     <MenuList list={list} isOpen={isOpen}></MenuList>
