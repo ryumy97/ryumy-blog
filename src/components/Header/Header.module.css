@@ -8,7 +8,6 @@
   position: absolute;
   top: calc(50% + 1px);
   left: -6vw;
-  background-color: #fa5959;
   width: 5vw;
   height: 1px;
   
@@ -16,21 +15,11 @@
 }
 
 .logo.open::before {
-  background-color: #ffffff;
-
   transition: background-color 0.25s cubic-bezier(0.5, 0.5, 0.46, 0.93) 0.25s;
 }
 
-.logo a {
+.logo * {
   transition: color 0.25s cubic-bezier(0.5, 0.5, 0.46, 0.93) 0.25s;
-}
-
-.logo.open a {
-  color: #ffffff;
-}
-
-.logo.open a:hover {
-  color: #fa5959;
 }
 
 .top {

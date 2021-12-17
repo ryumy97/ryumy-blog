@@ -1,8 +1,12 @@
 import React, { useEffect, useRef } from 'react'
 
+import { useTheme } from 'context/ThemeProvider'
+
 import styles from './MenuClose.module.css'
 
 export default function MenuClose({closeMenu, isOpen}) {
+    const { currentTheme } = useTheme();
+
     const closeIconTopToBottomRef = useRef();
     const closeIconBottomToTopRef = useRef();
 
@@ -28,10 +32,10 @@ export default function MenuClose({closeMenu, isOpen}) {
                 className={styles.closeIconContainer}            
                 onClick={closeMenu}
             >
-                <div className={styles.closeIconTop}/>
-                <div className={styles.closeIconBottom}/>
-                <div ref={closeIconTopToBottomRef} className={styles.closeIconTopToBottom}/>
-                <div ref={closeIconBottomToTopRef} className={styles.closeIconBottomToTop}/>
+                <div style={{backgroundColor: currentTheme.dark}} className={styles.closeIconTop}/>
+                <div style={{backgroundColor: currentTheme.dark}} className={styles.closeIconBottom}/>
+                <div ref={closeIconTopToBottomRef} style={{backgroundColor: currentTheme.dark}} className={styles.closeIconTopToBottom}/>
+                <div ref={closeIconBottomToTopRef} style={{backgroundColor: currentTheme.dark}} className={styles.closeIconBottomToTop}/>
             </div>
         </div>
     )
