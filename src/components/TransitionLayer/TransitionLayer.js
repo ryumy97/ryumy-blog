@@ -20,8 +20,11 @@ export default function TransitionLayer() {
     const [prevPath, setPrevPath] = useState(pathname);
 
     useEffect(() => {
+        setPrevPath(prevPath);
+    }, [prevPath])
+
+    useEffect(() => {
         if (isOpen) {
-            setPrevPath(pathname);
             if (prevPath !== pathname) {
                 setOpening(true);
                 setClosed(false);
