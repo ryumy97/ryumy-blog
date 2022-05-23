@@ -20,7 +20,7 @@ export default function Canvas({draw, resetFrameCount, resizeCanvas, ...rest}) {
                 return
             }
 
-            frameCount++;
+            frameCount += 0.5;
 
             resizeCanvasEvent(canvas, resizeCanvas);
             draw(ctx, frameCount, { resetFrameCount });
