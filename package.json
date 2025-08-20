@@ -1,0 +1,53 @@
+{
+  "name": "ryumy-blog",
+  "version": "1.0.0",
+  "description": "데이터 표현 100가지 방법 블로그 - 프론트엔드 개발자를 위한 데이터 시각화 예제와 인사이트",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryumy97/ryumy-blog.git"
+  },
+  "keywords": [
+    "data-visualization",
+    "blog",
+    "nextjs",
+    "mdx",
+    "frontend"
+  ],
+  "author": "ryumy97",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ryumy97/ryumy-blog/issues"
+  },
+  "homepage": "https://github.com/ryumy97/ryumy-blog#readme",
+  "dependencies": {
+    "@mdx-js/loader": "^3.1.0",
+    "@mdx-js/react": "^3.1.0",
+    "@next/mdx": "^15.5.0",
+    "@tailwindcss/postcss": "^4.1.12",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "framer-motion": "^12.23.12",
+    "gray-matter": "^4.0.3",
+    "lucide-react": "^0.540.0",
+    "next": "^15.5.0",
+    "next-mdx-remote": "^5.0.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "typescript": "^5.9.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.33.0",
+    "eslint-config-next": "^15.5.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.12"
+  }
+}
