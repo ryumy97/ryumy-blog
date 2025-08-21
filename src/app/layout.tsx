@@ -1,8 +1,10 @@
+import Header from "@/components/Header";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import Header from "@/components/Header";
+import { TransitionIn, TransitionOut } from "@/components/TransitionTunnel";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,16 +21,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen bg-background text-foreground">
+          <div className="min-h-screen">
             <Header />
-            <main>{children}</main>
+            <main>
+              {children}
+              <TransitionOut />
+            </main>
           </div>
         </ThemeProvider>
       </body>

@@ -3,6 +3,7 @@ import { getPostsByCategory } from "@/lib/posts";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import PostCard from "@/components/PostCard";
+import { TransitionIn } from "@/components/TransitionTunnel";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -39,39 +40,41 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     categoryDescriptions[category as keyof typeof categoryDescriptions];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Back Button */}
-      <Link
-        href="/"
-        className="inline-flex items-center text-primary hover:text-primary/80 mb-8"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        홈으로 돌아가기
-      </Link>
+    <TransitionIn>
+      <div className="container mx-auto px-4 py-8">
+        {/* Back Button */}
+        <Link
+          href="/"
+          className="inline-flex items-center text-primary hover:text-primary/80 mb-8"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          홈으로 돌아가기
+        </Link>
 
-      {/* Category Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">{categoryName}</h1>
-        <p className="text-xl text-muted-foreground mb-4">
-          {categoryDescription}
-        </p>
-        <p className="text-muted-foreground">총 {posts.length}개의 포스트</p>
-      </div>
-
-      {/* Posts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {posts.map((post) => (
-          <PostCard key={post.slug} post={post} />
-        ))}
-      </div>
-
-      {posts.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">
-            이 카테고리에 아직 포스트가 없습니다.
+        {/* Category Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-4">{categoryName}</h1>
+          <p className="text-xl text-muted-foreground mb-4">
+            {categoryDescription}
           </p>
+          <p className="text-muted-foreground">총 {posts.length}개의 포스트</p>
         </div>
-      )}
-    </div>
+
+        {/* Posts Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts.map((post) => (
+            <PostCard key={post.slug} post={post} />
+          ))}
+        </div>
+
+        {posts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">
+              이 카테고리에 아직 포스트가 없습니다.
+            </p>
+          </div>
+        )}
+      </div>
+    </TransitionIn>
   );
 }

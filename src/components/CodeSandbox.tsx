@@ -17,7 +17,7 @@ export default function CodeSandbox({
   height = 500,
   width = "100%",
 }: CodeSandboxProps) {
-  const [isLoaded, setIsLoaded] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const sandboxUrl = `https://codesandbox.io/embed/${id}`;
 
