@@ -1,6 +1,7 @@
 {
   "name": "ryumy-blog",
   "version": "1.0.0",
+  "type": "module",
   "description": "데이터 표현 100가지 방법 블로그 - 프론트엔드 개발자를 위한 데이터 시각화 예제와 인사이트",
   "main": "index.js",
   "scripts": {
@@ -50,6 +51,9 @@
     "next-themes": "^0.4.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.3.1",
     "typescript": "^5.9.2"
   },

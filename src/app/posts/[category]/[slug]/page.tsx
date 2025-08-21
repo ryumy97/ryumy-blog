@@ -3,24 +3,30 @@ import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import { Calendar, Tag, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { formatDateKorean } from "@/lib/utils";
-import MDXContent from "@/components/MDXContent";
+import { MDXRemote } from "next-mdx-remote/rsc";
 
 interface PostPageProps {
   params: Promise<{
+    category: string;
     slug: string;
   }>;
 }
 
 export async function generateStaticParams() {
   const posts = getAllPosts();
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
+  return posts.map((post) => {
+    const [category, slug] = post.slug.split("/");
+    return {
+      category,
+      slug,
+    };
+  });
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const { category, slug } = await params;
+  const fullSlug = `${category}/${slug}`;
+  const post = getPostBySlug(fullSlug);
 
   if (!post) {
     notFound();
@@ -98,7 +104,9 @@ export default async function PostPage({ params }: PostPageProps) {
           </header>
 
           {/* Post Content */}
-          <MDXContent source={post.content} />
+          <div className="prose prose-lg dark:prose-invert max-w-none">
+            <MDXRemote source={post.content} />
+          </div>
 
           {/* CodeSandbox/CodePen Embed */}
           {(post.codesandbox || post.codepen) && (

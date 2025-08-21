@@ -104,3 +104,29 @@ export function getCategories() {
 
   return categories;
 }
+
+// Function to get all MDX files for static generation
+export function getAllMdxFiles() {
+  const categoryDirs = [
+    "fundamentals",
+    "structures",
+    "context",
+    "interaction",
+    "beyond",
+  ];
+  const mdxFiles: string[] = [];
+
+  categoryDirs.forEach((category) => {
+    const categoryPath = path.join(postsDirectory, category);
+    if (fs.existsSync(categoryPath)) {
+      const files = fs.readdirSync(categoryPath);
+      files.forEach((file) => {
+        if (file.endsWith(".mdx")) {
+          mdxFiles.push(path.join(category, file));
+        }
+      });
+    }
+  });
+
+  return mdxFiles;
+}
