@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import { Calendar, Tag, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { MDXRemote } from "next-mdx-remote/rsc";
+import { formatDateKorean } from "@/lib/utils";
+import MDXContent from "@/components/MDXContent";
 
 interface PostPageProps {
   params: Promise<{
@@ -66,7 +67,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="flex items-center text-sm text-gray-500 mb-6">
               <div className="flex items-center mr-6">
                 <Calendar className="w-4 h-4 mr-2" />
-                {new Date(post.date).toLocaleDateString("ko-KR")}
+                {formatDateKorean(post.date)}
               </div>
               {post.tags.length > 0 && (
                 <div className="flex items-center">
@@ -97,9 +98,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </header>
 
           {/* Post Content */}
-          <div className="prose prose-lg dark:prose-invert max-w-none">
-            <MDXRemote source={post.content} />
-          </div>
+          <MDXContent source={post.content} />
 
           {/* CodeSandbox/CodePen Embed */}
           {(post.codesandbox || post.codepen) && (

@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { getPostsByCategory } from "@/lib/posts";
 import Link from "next/link";
-import { Calendar, ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import PostCard from "@/components/PostCard";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -60,36 +61,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       {/* Posts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.map((post) => (
-          <Link
-            key={post.slug}
-            href={`/posts/${post.slug}`}
-            className="group block bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 overflow-hidden"
-          >
-            {post.image && (
-              <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-            )}
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-2 group-hover:text-blue-600 transition-colors">
-                {post.title}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
-                {post.description}
-              </p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  {new Date(post.date).toLocaleDateString("ko-KR")}
-                </div>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </Link>
+          <PostCard key={post.slug} post={post} />
         ))}
       </div>
 

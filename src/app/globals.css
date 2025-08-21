@@ -1,29 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-}
+@import "tailwindcss";
 
 @layer base {
+  :root {
+    --radius: 0.625rem;
+  }
+
   * {
     @apply border-gray-200 dark:border-gray-700;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100;
   }
 }

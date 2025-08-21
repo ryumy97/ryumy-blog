@@ -7,6 +7,8 @@ import {
   MousePointer,
   Sparkles,
 } from "lucide-react";
+import { getAllPosts } from "@/lib/posts";
+import PostCard from "@/components/PostCard";
 
 const categories = [
   {
@@ -47,6 +49,9 @@ const categories = [
 ];
 
 export default function Home() {
+  const posts = getAllPosts();
+  const featuredPosts = posts.slice(0, 3);
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Hero Section */}
@@ -94,18 +99,15 @@ export default function Home() {
       <div className="mb-16">
         <h2 className="text-3xl font-bold mb-8 text-center">최근 포스트</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Placeholder for featured posts */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-            <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
-            <h3 className="text-lg font-semibold mb-2">포스트 제목</h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-              포스트 설명이 여기에 들어갑니다...
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">카테고리</span>
-              <span className="text-xs text-gray-500">2024.01.01</span>
+          {featuredPosts.length > 0 ? (
+            featuredPosts.map((post) => (
+              <PostCard key={post.slug} post={post} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-500 text-lg">아직 포스트가 없습니다.</p>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
