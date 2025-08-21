@@ -1,5 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import { cn } from "@/lib/utils";
+import CodeSandbox from "@/components/CodeSandbox";
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -133,6 +134,8 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {...props}
       />
     ),
+    // Custom components
+    CodeSandbox,
     ...components,
   };
 }

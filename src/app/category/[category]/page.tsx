@@ -43,7 +43,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       {/* Back Button */}
       <Link
         href="/"
-        className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-8"
+        className="inline-flex items-center text-primary hover:text-primary/80 mb-8"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         홈으로 돌아가기
@@ -52,10 +52,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       {/* Category Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">{categoryName}</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
+        <p className="text-xl text-muted-foreground mb-4">
           {categoryDescription}
         </p>
-        <p className="text-gray-500">총 {posts.length}개의 포스트</p>
+        <p className="text-muted-foreground">총 {posts.length}개의 포스트</p>
       </div>
 
       {/* Posts Grid */}
@@ -67,7 +67,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       {posts.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">
+          <p className="text-muted-foreground text-lg">
             이 카테고리에 아직 포스트가 없습니다.
           </p>
         </div>

@@ -8,7 +8,7 @@ export default function PostsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">모든 포스트</h1>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-muted-foreground">
           데이터 시각화의 모든 방법들을 탐험해보세요
         </p>
       </div>
@@ -21,7 +21,9 @@ export default function PostsPage() {
 
       {posts.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">아직 포스트가 없습니다.</p>
+          <p className="text-muted-foreground text-lg">
+            아직 포스트가 없습니다.
+          </p>
         </div>
       )}
     </div>

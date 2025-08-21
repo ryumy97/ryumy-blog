@@ -18,14 +18,11 @@ interface PostCardProps {
 }
 
 const categoryColors = {
-  fundamentals: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  structures:
-    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  context:
-    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  interaction:
-    "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-  beyond: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+  fundamentals: "bg-primary/10 text-primary border-primary/20",
+  structures: "bg-secondary/10 text-secondary border-secondary/20",
+  context: "bg-accent/10 text-accent-foreground border-accent/20",
+  interaction: "bg-muted/10 text-muted-foreground border-muted/20",
+  beyond: "bg-primary/10 text-primary border-primary/20",
 };
 
 export default function PostCard({ post }: PostCardProps) {
@@ -33,7 +30,7 @@ export default function PostCard({ post }: PostCardProps) {
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
       <Link href={`/posts/${post.slug}`}>
         {post.image && (
-          <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
+          <div className="w-full h-48 bg-muted relative overflow-hidden">
             <img
               src={post.image}
               alt={post.title}
@@ -44,7 +41,7 @@ export default function PostCard({ post }: PostCardProps) {
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2 mb-2">
             <Badge
-              variant="secondary"
+              variant="outline"
               className={
                 categoryColors[post.category as keyof typeof categoryColors]
               }
@@ -52,12 +49,12 @@ export default function PostCard({ post }: PostCardProps) {
               {post.category}
             </Badge>
           </div>
-          <CardTitle className="text-lg group-hover:text-blue-600 transition-colors line-clamp-2">
+          <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
             {post.title}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+          <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
             {post.description}
           </p>
 
@@ -77,14 +74,14 @@ export default function PostCard({ post }: PostCardProps) {
           )}
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center text-sm text-gray-500">
+            <div className="flex items-center text-sm text-muted-foreground">
               <Calendar className="w-4 h-4 mr-1" />
               {formatDateKorean(post.date)}
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="group-hover:text-blue-600"
+              className="group-hover:text-primary"
             >
               <span className="text-sm font-medium">자세히 보기</span>
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

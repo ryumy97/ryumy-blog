@@ -4,6 +4,7 @@ import { Calendar, Tag, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { formatDateKorean } from "@/lib/utils";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import CodeSandbox from "@/components/CodeSandbox";
 
 interface PostPageProps {
   params: Promise<{
@@ -32,13 +33,25 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
+  const components = {
+    CodeSandbox,
+  };
+
+  const categoryColors = {
+    fundamentals: "bg-primary/10 text-primary border-primary/20",
+    structures: "bg-secondary/10 text-secondary border-secondary/20",
+    context: "bg-accent/10 text-accent-foreground border-accent/20",
+    interaction: "bg-muted/10 text-muted-foreground border-muted/20",
+    beyond: "bg-primary/10 text-primary border-primary/20",
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <Link
           href="/posts"
-          className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-8"
+          className="inline-flex items-center text-primary hover:text-primary/80 mb-8"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           모든 포스트로 돌아가기
@@ -49,16 +62,8 @@ export default async function PostPage({ params }: PostPageProps) {
           <header className="mb-8">
             <div className="flex items-center mb-4">
               <span
-                className={`px-3 py-1 text-sm font-medium rounded-full ${
-                  post.category === "fundamentals"
-                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                    : post.category === "structures"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                    : post.category === "context"
-                    ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-                    : post.category === "interaction"
-                    ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-                    : "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200"
+                className={`px-3 py-1 text-sm font-medium rounded-full border ${
+                  categoryColors[post.category as keyof typeof categoryColors]
                 }`}
               >
                 {post.category}
@@ -66,11 +71,11 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
 
             <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-xl text-muted-foreground mb-6">
               {post.description}
             </p>
 
-            <div className="flex items-center text-sm text-gray-500 mb-6">
+            <div className="flex items-center text-sm text-muted-foreground mb-6">
               <div className="flex items-center mr-6">
                 <Calendar className="w-4 h-4 mr-2" />
                 {formatDateKorean(post.date)}
@@ -82,7 +87,7 @@ export default async function PostPage({ params }: PostPageProps) {
                     {post.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs"
+                        className="px-2 py-1 bg-muted rounded text-xs"
                       >
                         {tag}
                       </span>
@@ -93,7 +98,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
 
             {post.image && (
-              <div className="w-full h-64 md:h-96 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden mb-8">
+              <div className="w-full h-64 md:h-96 bg-muted rounded-lg overflow-hidden mb-8">
                 <img
                   src={post.image}
                   alt={post.title}
@@ -105,12 +110,12 @@ export default async function PostPage({ params }: PostPageProps) {
 
           {/* Post Content */}
           <div className="prose prose-lg dark:prose-invert max-w-none">
-            <MDXRemote source={post.content} />
+            <MDXRemote source={post.content} components={components} />
           </div>
 
           {/* CodeSandbox/CodePen Embed */}
           {(post.codesandbox || post.codepen) && (
-            <div className="mt-12 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="mt-12 p-6 bg-accent rounded-lg">
               <h3 className="text-lg font-semibold mb-4">실행 가능한 예제</h3>
               {post.codesandbox && (
                 <iframe
