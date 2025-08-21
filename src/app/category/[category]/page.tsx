@@ -1,5 +1,10 @@
 import { notFound } from "next/navigation";
 import { getPostsByCategory } from "@/lib/posts";
+import {
+  getCategoryById,
+  getCategoryNames,
+  getCategoryDescriptions,
+} from "@/lib/categories";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import PostCard from "@/components/PostCard";
@@ -11,33 +16,17 @@ interface CategoryPageProps {
   }>;
 }
 
-const categoryNames = {
-  fundamentals: "Fundamentals",
-  structures: "Structures",
-  context: "Context",
-  interaction: "Interaction",
-  beyond: "Beyond",
-};
-
-const categoryDescriptions = {
-  fundamentals: "점, 선, 면 등 기초적인 시각적 요소",
-  structures: "네트워크, 계층, 분포 등 구조적 표현",
-  context: "시간, 공간, 흐름 등 맥락적 표현",
-  interaction: "사용자 상호작용을 통한 데이터 탐색",
-  beyond: "혁신적이고 창의적인 데이터 표현",
-};
-
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
 
-  if (!categoryNames[category as keyof typeof categoryNames]) {
+  const categoryData = getCategoryById(category);
+  if (!categoryData) {
     notFound();
   }
 
   const posts = getPostsByCategory(category);
-  const categoryName = categoryNames[category as keyof typeof categoryNames];
-  const categoryDescription =
-    categoryDescriptions[category as keyof typeof categoryDescriptions];
+  const categoryName = categoryData.name;
+  const categoryDescription = categoryData.description;
 
   return (
     <TransitionIn>

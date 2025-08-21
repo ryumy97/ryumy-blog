@@ -30,43 +30,20 @@ export default function Header() {
   return (
     <header className="border-b border-border bg-background fixed left-0 right-0 top-0 z-10">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-6">
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                데이터 표현 100가지
-              </span>
-            </Link>
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center space-x-6 w-full">
+            <div className="grow">
+              <Link href="/" className="flex items-center space-x-2">
+                <span className="text-xl font-bold text-primary">
+                  Ryumy Blog
+                </span>
+              </Link>
+            </div>
             <Separator orientation="vertical" className="h-6" />
-            <nav className="hidden md:flex items-center space-x-4">
+            <nav className="hidden md:flex justify-end items-center space-x-4">
               <Link href="/posts">
                 <Button variant="ghost" size="sm">
                   모든 포스트
-                </Button>
-              </Link>
-              <Link href="/category/fundamentals">
-                <Button variant="ghost" size="sm">
-                  기본 요소
-                </Button>
-              </Link>
-              <Link href="/category/structures">
-                <Button variant="ghost" size="sm">
-                  구조
-                </Button>
-              </Link>
-              <Link href="/category/context">
-                <Button variant="ghost" size="sm">
-                  맥락
-                </Button>
-              </Link>
-              <Link href="/category/interaction">
-                <Button variant="ghost" size="sm">
-                  상호작용
-                </Button>
-              </Link>
-              <Link href="/category/beyond">
-                <Button variant="ghost" size="sm">
-                  혁신
                 </Button>
               </Link>
             </nav>

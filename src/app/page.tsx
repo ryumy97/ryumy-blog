@@ -8,46 +8,24 @@ import {
   Sparkles,
 } from "lucide-react";
 import { getAllPosts } from "@/lib/posts";
+import { getAllCategories } from "@/lib/categories";
 import PostCard from "@/components/PostCard";
 import { TransitionIn } from "@/components/TransitionTunnel";
 
-const categories = [
-  {
-    name: "Fundamentals",
-    description: "점, 선, 면 등 기초적인 시각적 요소",
-    icon: BarChart3,
-    href: "/category/fundamentals",
-    color: "bg-primary",
-  },
-  {
-    name: "Structures",
-    description: "네트워크, 계층, 분포 등 구조적 표현",
-    icon: Network,
-    href: "/category/structures",
-    color: "bg-secondary",
-  },
-  {
-    name: "Context",
-    description: "시간, 공간, 흐름 등 맥락적 표현",
-    icon: Clock,
-    href: "/category/context",
-    color: "bg-accent",
-  },
-  {
-    name: "Interaction",
-    description: "사용자 상호작용을 통한 데이터 탐색",
-    icon: MousePointer,
-    href: "/category/interaction",
-    color: "bg-muted",
-  },
-  {
-    name: "Beyond",
-    description: "혁신적이고 창의적인 데이터 표현",
-    icon: Sparkles,
-    href: "/category/beyond",
-    color: "bg-primary",
-  },
-];
+const categoryIcons = {
+  "data-visualization": BarChart3,
+  fundamentals: BarChart3,
+  structures: Network,
+  context: Clock,
+  interaction: MousePointer,
+  beyond: Sparkles,
+};
+
+const categories = getAllCategories().map((category) => ({
+  ...category,
+  icon: categoryIcons[category.id as keyof typeof categoryIcons] || BarChart3,
+  href: `/category/${category.id}`,
+}));
 
 export default function Home() {
   const posts = getAllPosts();
@@ -58,8 +36,8 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            데이터 표현 100가지 방법
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-primary">
+            Ryumy's Blog
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             프론트엔드 개발자를 위한 데이터 시각화 예제와 인사이트를 공유하는

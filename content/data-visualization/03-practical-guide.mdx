@@ -1,0 +1,631 @@
+---
+title: "실전 가이드 - 데이터 시각화 프로젝트 시작하기"
+description: "실제 프로젝트에서 데이터 시각화를 구현하는 방법과 모범 사례를 다룹니다."
+date: "2024-01-15"
+category: ["data-visualization", "interaction"]
+tags: ["실전", "가이드", "프로젝트", "구현"]
+image: "/images/data-visualization-practical.jpg"
+order: 3
+---
+
+# 실전 가이드 - 데이터 시각화 프로젝트 시작하기
+
+이제 실제 프로젝트에서 데이터 시각화를 구현하는 방법을 알아보겠습니다. 이론을 넘어서 실제 코드로 구현하는 과정을 단계별로 살펴보겠습니다.
+
+## 프로젝트 설정
+
+### 1. 개발 환경 구성
+
+```bash
+# Next.js 프로젝트 생성
+npx create-next-app@latest data-viz-project --typescript --tailwind --app
+
+# 필요한 라이브러리 설치
+npm install d3 @types/d3
+npm install framer-motion
+npm install recharts
+npm install @nivo/core @nivo/line @nivo/bar @nivo/pie
+```
+
+### 2. 폴더 구조
+
+```
+src/
+├── components/
+│   ├── charts/
+│   │   ├── BarChart.tsx
+│   │   ├── LineChart.tsx
+│   │   ├── ScatterPlot.tsx
+│   │   └── index.ts
+│   ├── ui/
+│   └── layout/
+├── lib/
+│   ├── d3-utils.ts
+│   ├── chart-configs.ts
+│   └── data-processors.ts
+├── types/
+│   └── chart.ts
+└── hooks/
+    └── useChart.ts
+```
+
+## 기본 차트 컴포넌트 구현
+
+### 1. 막대 차트 (Bar Chart)
+
+```tsx
+// src/components/charts/BarChart.tsx
+"use client";
+
+import { useEffect, useRef } from "react";
+import * as d3 from "d3";
+
+interface BarChartProps {
+  data: Array<{ label: string; value: number }>;
+  width?: number;
+  height?: number;
+  margin?: { top: number; right: number; bottom: number; left: number };
+}
+
+export default function BarChart({
+  data,
+  width = 600,
+  height = 400,
+  margin = { top: 20, right: 20, bottom: 30, left: 40 },
+}: BarChartProps) {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    if (!svgRef.current || !data.length) return;
+
+    // Clear previous content
+    d3.select(svgRef.current).selectAll("*").remove();
+
+    const svg = d3.select(svgRef.current);
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+
+    // Scales
+    const xScale = d3
+      .scaleBand()
+      .domain(data.map((d) => d.label))
+      .range([0, chartWidth])
+      .padding(0.1);
+
+    const yScale = d3
+      .scaleLinear()
+      .domain([0, d3.max(data, (d) => d.value) || 0])
+      .range([chartHeight, 0]);
+
+    // Create chart group
+    const chart = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    // Add bars
+    chart
+      .selectAll(".bar")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("x", (d) => xScale(d.label) || 0)
+      .attr("y", (d) => yScale(d.value))
+      .attr("width", xScale.bandwidth())
+      .attr("height", (d) => chartHeight - yScale(d.value))
+      .attr("fill", "steelblue")
+      .attr("opacity", 0.8)
+      .on("mouseover", function (event, d) {
+        d3.select(this).attr("opacity", 1);
+      })
+      .on("mouseout", function () {
+        d3.select(this).attr("opacity", 0.8);
+      });
+
+    // Add axes
+    const xAxis = d3.axisBottom(xScale);
+    const yAxis = d3.axisLeft(yScale);
+
+    chart
+      .append("g")
+      .attr("transform", `translate(0, ${chartHeight})`)
+      .call(xAxis);
+    chart.append("g").call(yAxis);
+  }, [data, width, height, margin]);
+
+  return (
+    <svg
+      ref={svgRef}
+      width={width}
+      height={height}
+      className="border border-gray-200 rounded-lg"
+    />
+  );
+}
+```
+
+### 2. 선 차트 (Line Chart)
+
+```tsx
+// src/components/charts/LineChart.tsx
+"use client";
+
+import { useEffect, useRef } from "react";
+import * as d3 from "d3";
+
+interface LineChartProps {
+  data: Array<{ x: number; y: number }>;
+  width?: number;
+  height?: number;
+  margin?: { top: number; right: number; bottom: number; left: number };
+}
+
+export default function LineChart({
+  data,
+  width = 600,
+  height = 400,
+  margin = { top: 20, right: 20, bottom: 30, left: 40 },
+}: LineChartProps) {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    if (!svgRef.current || !data.length) return;
+
+    d3.select(svgRef.current).selectAll("*").remove();
+
+    const svg = d3.select(svgRef.current);
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+
+    // Scales
+    const xScale = d3
+      .scaleLinear()
+      .domain(d3.extent(data, (d) => d.x) as [number, number])
+      .range([0, chartWidth]);
+
+    const yScale = d3
+      .scaleLinear()
+      .domain(d3.extent(data, (d) => d.y) as [number, number])
+      .range([chartHeight, 0]);
+
+    // Line generator
+    const line = d3
+      .line<{ x: number; y: number }>()
+      .x((d) => xScale(d.x))
+      .y((d) => yScale(d.y))
+      .curve(d3.curveMonotoneX);
+
+    // Create chart group
+    const chart = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    // Add line
+    chart
+      .append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 2)
+      .attr("d", line);
+
+    // Add dots
+    chart
+      .selectAll(".dot")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "dot")
+      .attr("cx", (d) => xScale(d.x))
+      .attr("cy", (d) => yScale(d.y))
+      .attr("r", 4)
+      .attr("fill", "steelblue")
+      .on("mouseover", function (event, d) {
+        d3.select(this).attr("r", 6);
+      })
+      .on("mouseout", function () {
+        d3.select(this).attr("r", 4);
+      });
+
+    // Add axes
+    const xAxis = d3.axisBottom(xScale);
+    const yAxis = d3.axisLeft(yScale);
+
+    chart
+      .append("g")
+      .attr("transform", `translate(0, ${chartHeight})`)
+      .call(xAxis);
+    chart.append("g").call(yAxis);
+  }, [data, width, height, margin]);
+
+  return (
+    <svg
+      ref={svgRef}
+      width={width}
+      height={height}
+      className="border border-gray-200 rounded-lg"
+    />
+  );
+}
+```
+
+## 데이터 처리 유틸리티
+
+### 1. 데이터 정규화
+
+```tsx
+// src/lib/data-processors.ts
+export function normalizeData(data: number[]): number[] {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  return data.map((value) => (value - min) / (max - min));
+}
+
+export function groupByCategory<T>(
+  data: T[],
+  key: keyof T
+): Record<string, T[]> {
+  return data.reduce((groups, item) => {
+    const category = String(item[key]);
+    if (!groups[category]) {
+      groups[category] = [];
+    }
+    groups[category].push(item);
+    return groups;
+  }, {} as Record<string, T[]>);
+}
+
+export function calculatePercentages(data: number[]): number[] {
+  const total = data.reduce((sum, value) => sum + value, 0);
+  return data.map((value) => (value / total) * 100);
+}
+```
+
+### 2. 색상 팔레트
+
+```tsx
+// src/lib/chart-configs.ts
+export const colorPalettes = {
+  categorical: [
+    "#1f77b4",
+    "#ff7f0e",
+    "#2ca02c",
+    "#d62728",
+    "#9467bd",
+    "#8c564b",
+    "#e377c2",
+    "#7f7f7f",
+    "#bcbd22",
+    "#17becf",
+  ],
+  sequential: [
+    "#f7fbff",
+    "#deebf7",
+    "#c6dbef",
+    "#9ecae1",
+    "#6baed6",
+    "#4292c6",
+    "#2171b5",
+    "#08519c",
+    "#08306b",
+  ],
+  diverging: [
+    "#67001f",
+    "#b2182b",
+    "#d6604d",
+    "#f4a582",
+    "#fddbc7",
+    "#f7f7f7",
+    "#d1e5f0",
+    "#92c5de",
+    "#4393c3",
+    "#2166ac",
+    "#053061",
+  ],
+};
+
+export function getColor(
+  index: number,
+  palette: keyof typeof colorPalettes = "categorical"
+): string {
+  const colors = colorPalettes[palette];
+  return colors[index % colors.length];
+}
+```
+
+## 인터랙티브 기능 구현
+
+### 1. 줌과 팬
+
+```tsx
+// src/hooks/useChart.ts
+import { useEffect, useRef } from "react";
+import * as d3 from "d3";
+
+export function useZoom(svgRef: React.RefObject<SVGSVGElement>) {
+  const zoomRef = useRef<d3.ZoomBehavior<Element, unknown> | null>(null);
+
+  useEffect(() => {
+    if (!svgRef.current) return;
+
+    const svg = d3.select(svgRef.current);
+
+    zoomRef.current = d3
+      .zoom()
+      .scaleExtent([0.5, 5])
+      .on("zoom", (event) => {
+        svg.select(".chart-content").attr("transform", event.transform);
+      });
+
+    svg.call(zoomRef.current);
+
+    return () => {
+      if (zoomRef.current) {
+        svg.on(".zoom", null);
+      }
+    };
+  }, [svgRef]);
+
+  return zoomRef.current;
+}
+```
+
+### 2. 툴팁
+
+```tsx
+// src/components/charts/Tooltip.tsx
+"use client";
+
+import { useEffect, useRef } from "react";
+import * as d3 from "d3";
+
+interface TooltipProps {
+  data: any;
+  position: { x: number; y: number } | null;
+  visible: boolean;
+}
+
+export default function Tooltip({ data, position, visible }: TooltipProps) {
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!tooltipRef.current || !position) return;
+
+    const tooltip = d3.select(tooltipRef.current);
+
+    if (visible) {
+      tooltip
+        .style("opacity", 1)
+        .style("left", `${position.x + 10}px`)
+        .style("top", `${position.y - 10}px`);
+    } else {
+      tooltip.style("opacity", 0);
+    }
+  }, [data, position, visible]);
+
+  if (!visible || !data) return null;
+
+  return (
+    <div
+      ref={tooltipRef}
+      className="absolute bg-black text-white px-3 py-2 rounded text-sm pointer-events-none z-50"
+      style={{ opacity: 0 }}
+    >
+      <div className="font-semibold">{data.label}</div>
+      <div>값: {data.value}</div>
+    </div>
+  );
+}
+```
+
+## 성능 최적화
+
+### 1. 메모이제이션
+
+```tsx
+// src/components/charts/OptimizedChart.tsx
+"use client";
+
+import { useMemo } from "react";
+import { BarChart } from "./BarChart";
+
+interface OptimizedChartProps {
+  data: Array<{ label: string; value: number }>;
+  width: number;
+  height: number;
+}
+
+export default function OptimizedChart({
+  data,
+  width,
+  height,
+}: OptimizedChartProps) {
+  // 데이터 전처리를 메모이제이션
+  const processedData = useMemo(() => {
+    return data
+      .filter((item) => item.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 20); // 상위 20개만 표시
+  }, [data]);
+
+  // 차트 설정을 메모이제이션
+  const chartConfig = useMemo(
+    () => ({
+      width,
+      height,
+      margin: { top: 20, right: 20, bottom: 30, left: 40 },
+    }),
+    [width, height]
+  );
+
+  return <BarChart data={processedData} {...chartConfig} />;
+}
+```
+
+### 2. 가상화 (대용량 데이터)
+
+```tsx
+// src/components/charts/VirtualizedChart.tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import { BarChart } from "./BarChart";
+
+interface VirtualizedChartProps {
+  data: Array<{ label: string; value: number }>;
+  width: number;
+  height: number;
+  itemHeight: number;
+}
+
+export default function VirtualizedChart({
+  data,
+  width,
+  height,
+  itemHeight,
+}: VirtualizedChartProps) {
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
+  const [scrollTop, setScrollTop] = useState(0);
+
+  const visibleData = data.slice(visibleRange.start, visibleRange.end);
+  const totalHeight = data.length * itemHeight;
+
+  useEffect(() => {
+    const start = Math.floor(scrollTop / itemHeight);
+    const end = Math.min(
+      start + Math.ceil(height / itemHeight) + 1,
+      data.length
+    );
+    setVisibleRange({ start, end });
+  }, [scrollTop, height, itemHeight, data.length]);
+
+  return (
+    <div
+      style={{ height, overflow: "auto" }}
+      onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+    >
+      <div style={{ height: totalHeight, position: "relative" }}>
+        <div
+          style={{
+            position: "absolute",
+            top: visibleRange.start * itemHeight,
+            left: 0,
+            right: 0,
+          }}
+        >
+          <BarChart
+            data={visibleData}
+            width={width}
+            height={visibleData.length * itemHeight}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## 모범 사례
+
+### 1. 접근성 고려
+
+```tsx
+// src/components/charts/AccessibleChart.tsx
+"use client";
+
+import { BarChart } from "./BarChart";
+
+interface AccessibleChartProps {
+  data: Array<{ label: string; value: number }>;
+  title: string;
+  description: string;
+}
+
+export default function AccessibleChart({
+  data,
+  title,
+  description,
+}: AccessibleChartProps) {
+  return (
+    <div role="region" aria-label={title}>
+      <h3>{title}</h3>
+      <p>{description}</p>
+      <BarChart data={data} />
+      <div className="sr-only">
+        <table>
+          <thead>
+            <tr>
+              <th>항목</th>
+              <th>값</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((item) => (
+              <tr key={item.label}>
+                <td>{item.label}</td>
+                <td>{item.value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+```
+
+### 2. 반응형 디자인
+
+```tsx
+// src/components/charts/ResponsiveChart.tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import { BarChart } from "./BarChart";
+
+interface ResponsiveChartProps {
+  data: Array<{ label: string; value: number }>;
+}
+
+export default function ResponsiveChart({ data }: ResponsiveChartProps) {
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      const container = document.getElementById("chart-container");
+      if (container) {
+        setDimensions({
+          width: container.clientWidth,
+          height: Math.min(400, window.innerHeight * 0.6),
+        });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, []);
+
+  return (
+    <div id="chart-container" className="w-full">
+      <BarChart
+        data={data}
+        width={dimensions.width}
+        height={dimensions.height}
+      />
+    </div>
+  );
+}
+```
+
+## 다음 단계
+
+이제 기본적인 차트 컴포넌트와 유틸리티를 구현했습니다. 다음 포스트에서는:
+
+1. **고급 차트 타입** (산점도, 히트맵, 네트워크 그래프)
+2. **애니메이션과 전환 효과**
+3. **실시간 데이터 처리**
+4. **대시보드 구성**
+5. **성능 최적화 기법**
+
+을 다룰 예정입니다.

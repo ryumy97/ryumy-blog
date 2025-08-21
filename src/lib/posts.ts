@@ -6,12 +6,7 @@ export interface PostMetadata {
   title: string;
   description: string;
   date: string;
-  category:
-    | "fundamentals"
-    | "structures"
-    | "context"
-    | "interaction"
-    | "beyond";
+  category: string | string[];
   tags: string[];
   image?: string;
   codesandbox?: string;
@@ -28,14 +23,13 @@ export interface Post extends PostMetadata {
 const postsDirectory = path.join(process.cwd(), "content");
 
 export function getPostSlugs(): string[] {
-  const categoryDirs = [
-    "fundamentals",
-    "structures",
-    "context",
-    "interaction",
-    "beyond",
-  ];
   const slugs: string[] = [];
+
+  // Get all subdirectories in content folder
+  const categoryDirs = fs
+    .readdirSync(postsDirectory, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
 
   categoryDirs.forEach((category) => {
     const categoryPath = path.join(postsDirectory, category);
@@ -85,7 +79,12 @@ export function getAllPosts(): Post[] {
 }
 
 export function getPostsByCategory(category: string): Post[] {
-  return getAllPosts().filter((post) => post.category === category);
+  return getAllPosts().filter((post) => {
+    if (Array.isArray(post.category)) {
+      return post.category.includes(category);
+    }
+    return post.category === category;
+  });
 }
 
 export function getFeaturedPosts(): Post[] {
@@ -95,10 +94,17 @@ export function getFeaturedPosts(): Post[] {
 export function getCategories() {
   const posts = getAllPosts();
   const categories = posts.reduce((acc, post) => {
-    if (!acc[post.category]) {
-      acc[post.category] = 0;
-    }
-    acc[post.category]++;
+    const postCategories = Array.isArray(post.category)
+      ? post.category
+      : [post.category];
+
+    postCategories.forEach((cat) => {
+      if (!acc[cat]) {
+        acc[cat] = 0;
+      }
+      acc[cat]++;
+    });
+
     return acc;
   }, {} as Record<string, number>);
 
@@ -107,14 +113,13 @@ export function getCategories() {
 
 // Function to get all MDX files for static generation
 export function getAllMdxFiles() {
-  const categoryDirs = [
-    "fundamentals",
-    "structures",
-    "context",
-    "interaction",
-    "beyond",
-  ];
   const mdxFiles: string[] = [];
+
+  // Get all subdirectories in content folder
+  const categoryDirs = fs
+    .readdirSync(postsDirectory, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
 
   categoryDirs.forEach((category) => {
     const categoryPath = path.join(postsDirectory, category);

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateKorean } from "@/lib/utils";
+import { getCategoryColor } from "@/lib/categories";
 
 interface PostCardProps {
   post: {
@@ -11,19 +12,23 @@ interface PostCardProps {
     title: string;
     description: string;
     date: string;
-    category: string;
+    category: string | string[];
     tags: string[];
     image?: string;
   };
 }
 
-const categoryColors = {
-  fundamentals: "bg-primary/10 text-primary border-primary/20",
-  structures: "bg-secondary/10 text-secondary border-secondary/20",
-  context: "bg-accent/10 text-accent-foreground border-accent/20",
-  interaction: "bg-muted/10 text-muted-foreground border-muted/20",
-  beyond: "bg-primary/10 text-primary border-primary/20",
-};
+function getCategoryBadgeStyle(categoryId: string): string {
+  const color = getCategoryColor(categoryId);
+  const colorMap: Record<string, string> = {
+    "bg-primary": "bg-primary/10 text-primary border-primary/20",
+    "bg-secondary": "bg-secondary/10 text-secondary border-secondary/20",
+    "bg-accent": "bg-accent/10 text-accent-foreground border-accent/20",
+    "bg-muted": "bg-muted/10 text-muted-foreground border-muted/20",
+  };
+
+  return colorMap[color] || "bg-muted/10 text-muted-foreground border-muted/20";
+}
 
 export default function PostCard({ post }: PostCardProps) {
   return (
@@ -40,14 +45,24 @@ export default function PostCard({ post }: PostCardProps) {
         )}
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2 mb-2">
-            <Badge
-              variant="outline"
-              className={
-                categoryColors[post.category as keyof typeof categoryColors]
-              }
-            >
-              {post.category}
-            </Badge>
+            {Array.isArray(post.category) ? (
+              post.category.map((cat) => (
+                <Badge
+                  key={cat}
+                  variant="outline"
+                  className={getCategoryBadgeStyle(cat)}
+                >
+                  {cat}
+                </Badge>
+              ))
+            ) : (
+              <Badge
+                variant="outline"
+                className={getCategoryBadgeStyle(post.category)}
+              >
+                {post.category}
+              </Badge>
+            )}
           </div>
           <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
             {post.title}
