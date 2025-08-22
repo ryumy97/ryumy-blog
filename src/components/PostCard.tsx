@@ -31,9 +31,24 @@ function getCategoryBadgeStyle(categoryId: string): string {
 }
 
 export default function PostCard({ post }: PostCardProps) {
+  // Generate the correct link based on category structure
+  const getPostLink = () => {
+    const categories = Array.isArray(post.category)
+      ? post.category
+      : [post.category];
+
+    // For data-visualization posts, use the hierarchical structure
+    if (categories.includes("data-visualization")) {
+      return `/posts/data-visualization/${post.slug}`;
+    }
+
+    // For other posts, use the simple structure
+    return `/posts/${post.slug}`;
+  };
+
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-      <Link href={`/posts/${post.slug}`}>
+      <Link href={getPostLink()}>
         {post.image && (
           <div className="w-full h-48 bg-muted relative overflow-hidden">
             <img

@@ -37,12 +37,11 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-primary">
-            Ryumy's Blog
+            저의 블로그에 오신것을 환영합니다.
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             프론트엔드 개발자를 위한 데이터 시각화 예제와 인사이트를 공유하는
-            블로그입니다. 점, 선, 면 등 기초적인 시각적 요소에서 출발하여 구조,
-            맥락, 상호작용까지 다룹니다.
+            블로그입니다.
           </p>
         </div>
 

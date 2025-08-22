@@ -48,7 +48,29 @@ export function getPostSlugs(): string[] {
 
 export function getPostBySlug(slug: string): Post | null {
   try {
-    const fullPath = path.join(postsDirectory, `${slug}.mdx`);
+    // Handle both old and new path structures
+    let fullPath = path.join(postsDirectory, `${slug}.mdx`);
+
+    // If the file doesn't exist at the direct path, try the data-visualization subdirectory
+    if (!fs.existsSync(fullPath)) {
+      const parts = slug.split("/");
+      if (parts.length >= 2) {
+        // Try data-visualization subdirectory structure
+        const subcategory = parts[0];
+        const postSlug = parts[1];
+        const alternativePath = path.join(
+          postsDirectory,
+          "data-visualization",
+          subcategory,
+          `${postSlug}.mdx`
+        );
+
+        if (fs.existsSync(alternativePath)) {
+          fullPath = alternativePath;
+        }
+      }
+    }
+
     const fileContents = fs.readFileSync(fullPath, "utf8");
     const { data, content } = matter(fileContents);
 
@@ -76,6 +98,28 @@ export function getAllPosts(): Post[] {
     });
 
   return posts;
+}
+
+// Function to get posts with hierarchical slugs for the new structure
+export function getPostsWithHierarchicalSlugs(): Post[] {
+  const posts = getAllPosts();
+
+  return posts.map((post) => {
+    // If the post belongs to data-visualization category, create hierarchical slug
+    const categories = Array.isArray(post.category)
+      ? post.category
+      : [post.category];
+    if (categories.includes("data-visualization")) {
+      const parts = post.slug.split("/");
+      if (parts.length >= 2) {
+        return {
+          ...post,
+          slug: `data-visualization/${post.slug}`,
+        };
+      }
+    }
+    return post;
+  });
 }
 
 export function getPostsByCategory(category: string): Post[] {

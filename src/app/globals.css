@@ -16,6 +16,11 @@
   .lenis {
     @apply absolute inset-0 overflow-y-auto;
   }
+
+  button,
+  a {
+    @apply cursor-pointer;
+  }
 }
 
 :root {
