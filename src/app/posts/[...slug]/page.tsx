@@ -71,7 +71,7 @@ export default async function PostPage({ params }: PostPageProps) {
     // Add main category if it's data-visualization
     if (mainCategory === "data-visualization") {
       breadcrumbs.push({
-        name: "데이터 표현 100가지 방법",
+        name: "데이터를 표현하는 100가지 방법",
         href: "/category/data-visualization",
       });
     }
@@ -165,7 +165,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </header>
 
             {/* Post Content */}
-            <div className="prose prose-lg dark:prose-invert max-w-none">
+            <div className="max-w-none [&>h1]:text-4xl [&>h1]:font-bold [&>h1]:mb-8 [&>h1]:mt-12 [&>h2]:text-3xl [&>h2]:font-semibold [&>h2]:mb-6 [&>h2]:mt-10 [&>h3]:text-2xl [&>h3]:font-semibold [&>h3]:mb-4 [&>h3]:mt-8 [&>h4]:text-xl [&>h4]:font-semibold [&>h4]:mb-3 [&>h4]:mt-6 [&>p]:text-base [&>p]:leading-7 [&>p]:mb-6 [&>p]:text-muted-foreground [&>strong]:text-foreground [&>strong]:font-semibold [&>code]:text-sm [&>code]:bg-muted [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>pre]:bg-muted [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>blockquote]:border-l-4 [&>blockquote]:border-primary [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:text-muted-foreground [&>ul]:my-6 [&>ul]:list-disc [&>ul]:pl-6 [&>ol]:my-6 [&>ol]:list-decimal [&>ol]:pl-6 [&>li]:my-2 [&>hr]:my-8 [&>hr]:border-border">
               <MDXRemote source={post.content} components={components} />
             </div>
           </article>

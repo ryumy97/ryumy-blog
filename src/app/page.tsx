@@ -46,32 +46,35 @@ export default function Home() {
         </div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {categories.map((category) => (
-            <Link
-              key={category.name}
-              href={category.href}
-              className="group block p-6 bg-card text-card-foreground rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-border"
-            >
-              <div className="flex items-center mb-4">
-                <div
-                  className={`p-3 rounded-lg ${category.color} text-primary-foreground mr-4`}
-                >
-                  <category.icon className="w-6 h-6" />
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold mb-8 text-center">카테고리</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            {categories.map((category) => (
+              <Link
+                key={category.name}
+                href={category.href}
+                className="group block p-6 bg-card text-card-foreground rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border border-border"
+              >
+                <div className="flex items-center mb-4">
+                  <div
+                    className={`p-3 rounded-lg ${category.color} text-primary-foreground mr-4`}
+                  >
+                    <category.icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                    {category.name}
+                  </h3>
                 </div>
-                <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                  {category.name}
-                </h3>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                {category.description}
-              </p>
-              <div className="flex items-center text-primary group-hover:text-primary/80">
-                <span className="text-sm font-medium">자세히 보기</span>
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-          ))}
+                <p className="text-muted-foreground mb-4">
+                  {category.description}
+                </p>
+                <div className="flex items-center text-primary group-hover:text-primary/80">
+                  <span className="text-sm font-medium">자세히 보기</span>
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Featured Posts */}

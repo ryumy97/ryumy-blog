@@ -2,7 +2,7 @@
   "name": "ryumy-blog",
   "version": "1.0.0",
   "type": "module",
-  "description": "데이터 표현 100가지 방법 블로그 - 프론트엔드 개발자를 위한 데이터 시각화 예제와 인사이트",
+  "description": "Ryumy 블로그 - 프론트엔드 개발자를 위한 데이터 시각화 예제와 인사이트",
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
@@ -38,6 +38,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/postcss": "^4.1.12",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
