@@ -105,7 +105,10 @@ const TransitionWrapper = ({ children }: Props) => {
             y: ["100vw", 0],
             rotate: [-30, 0],
           },
-          DEFAULT_TRANSITION,
+          {
+            ...DEFAULT_TRANSITION,
+            delay: 0.3,
+          },
         ],
       ]);
 
@@ -119,8 +122,8 @@ const TransitionWrapper = ({ children }: Props) => {
         [
           containwer,
           {
-            x: [0, "-50vw"],
-            y: [0, "-50vw"],
+            x: [0, "-10vw"],
+            y: [0, "-10vw"],
             rotate: [0, 10],
           },
           DEFAULT_TRANSITION,
@@ -129,7 +132,7 @@ const TransitionWrapper = ({ children }: Props) => {
 
       delay(() => {
         safeToRemove();
-      }, DEFAULT_DURATION);
+      }, DEFAULT_DURATION + 0.3);
     }
   }, [isPresent, safeToRemove]);
 

@@ -129,11 +129,16 @@ export function getPostsWithHierarchicalSlugs(): Post[] {
 }
 
 export function getPostsByCategory(category: string): Post[] {
-  return getAllPosts().filter((post) => {
+  const posts = getAllPosts().filter((post) => {
     if (Array.isArray(post.category)) {
       return post.category.includes(category);
     }
     return post.category === category;
+  });
+
+  // Sort by date in ascending order (oldest first)
+  return posts.sort((post1, post2) => {
+    return new Date(post1.date).getTime() - new Date(post2.date).getTime();
   });
 }
 

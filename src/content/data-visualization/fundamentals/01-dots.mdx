@@ -1,263 +1,33 @@
 ---
-title: "점(Dots) - 데이터 시각화의 기본 요소"
-description: "점은 데이터 시각화에서 가장 기본적인 요소입니다. 개별 데이터 포인트를 표현하는 강력한 방법을 알아보세요."
-date: "2024-01-15"
+title: "1차원 데이터 표현 - 점"
+description: ""
+date: "2025-08-22"
 category: ["fundamentals", "data-visualization"]
 tags: ["점", "기본요소", "산점도", "시각화", "D3.js"]
 image: "/images/dots-visualization.jpg"
 ---
 
-# 점(Dots) - 데이터 시각화의 기본 요소
+# 1차원 데이터 표현 - 점
 
-점은 데이터 시각화에서 가장 기본적이면서도 강력한 요소입니다. 개별 데이터 포인트를 표현하는 가장 직관적인 방법 중 하나로, 복잡한 데이터셋에서도 패턴과 관계를 명확하게 보여줄 수 있습니다.
+1차원 데이터를 사용하여 가장 기초적인 시각화를 쓰자.
 
-## 점의 기본 개념
+## 1차원 데이터의 기본 개념
 
-점은 2차원 또는 3차원 공간에서 개별 데이터 포인트를 나타내는 기하학적 요소입니다. 각 점은 하나의 관찰값이나 측정값을 표현하며, 점들의 분포를 통해 데이터의 특성을 파악할 수 있습니다.
+1차원 데이터란 값이 하나인 데이터를 말합니다.
 
-### 점의 장점
+예를 들어,
+만약 우리가 버튼이 눌렸나 안눌렸나를 확인하는 것도,
+공부를 몇시간 했느냐,
+오늘 하루는 몇칼로리 먹었느냐.
 
-- **단순성**: 이해하기 쉽고 직관적
-- **확장성**: 많은 수의 데이터 포인트도 표현 가능
-- **유연성**: 크기, 색상, 모양 등 다양한 속성으로 정보 전달
-- **효율성**: 공간을 효율적으로 활용
+이런 데이터들은 모두 1차원 데이터로 표현할수 있습니다.
 
-## 실제 구현 예제
+## 점
 
-다음은 React와 D3.js를 사용한 기본적인 점 시각화 예제입니다:
+점은 1차원 데이터를 표현하는 가장 기초적인 요소입니다.
+
+있다와 없다를 표현할수 있는 요소입니다.
 
 <CodeSandbox id="j3hx5z" title="D3.js 점 시각화 예제" height={600} />
 
-이 예제는 D3.js를 사용하여 산점도를 구현한 것입니다. 마우스 호버 시 점의 크기와 색상이 변경되며, 각 점의 데이터를 확인할 수 있습니다.
-
-### 코드 구조
-
-```jsx
-import React, { useEffect, useRef } from "react";
-import * as d3 from "d3";
-
-const DotVisualization = ({ data }) => {
-  const svgRef = useRef();
-
-  useEffect(() => {
-    if (!data || !svgRef.current) return;
-
-    const svg = d3.select(svgRef.current);
-    const width = 600;
-    const height = 400;
-    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
-
-    // Clear previous content
-    svg.selectAll("*").remove();
-
-    // Create scales
-    const xScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(data, (d) => d.x)])
-      .range([margin.left, width - margin.right]);
-
-    const yScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(data, (d) => d.y)])
-      .range([height - margin.bottom, margin.top]);
-
-    // Add dots
-    svg
-      .selectAll("circle")
-      .data(data)
-      .enter()
-      .append("circle")
-      .attr("cx", (d) => xScale(d.x))
-      .attr("cy", (d) => yScale(d.y))
-      .attr("r", 5)
-      .attr("fill", "#3B82F6")
-      .attr("opacity", 0.7)
-      .on("mouseover", function () {
-        d3.select(this).attr("r", 8).attr("fill", "#EF4444");
-      })
-      .on("mouseout", function () {
-        d3.select(this).attr("r", 5).attr("fill", "#3B82F6");
-      });
-
-    // Add axes
-    svg
-      .append("g")
-      .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(xScale));
-
-    svg
-      .append("g")
-      .attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(yScale));
-  }, [data]);
-
-  return (
-    <svg
-      ref={svgRef}
-      width="600"
-      height="400"
-      style={{ border: "1px solid #ccc" }}
-    />
-  );
-};
-
-export default DotVisualization;
-```
-
-## 점의 다양한 활용
-
-### 1. 산점도 (Scatter Plot)
-
-가장 일반적인 점 시각화로, 두 변수 간의 관계를 보여줍니다.
-
-**특징:**
-
-- 두 개의 수치형 변수 간의 관계 분석
-- 상관관계 패턴 파악
-- 이상치(outlier) 탐지
-
-### 2. 버블 차트 (Bubble Chart)
-
-점의 크기를 세 번째 변수로 활용하여 더 많은 정보를 전달합니다.
-
-**장점:**
-
-- 3차원 데이터를 2차원으로 표현
-- 시각적 임팩트가 큼
-- 상대적 크기 비교 용이
-
-### 3. 점 지도 (Dot Map)
-
-지리적 위치에 점을 배치하여 공간적 분포를 시각화합니다.
-
-**활용:**
-
-- 인구 분포
-- 사건 발생 위치
-- 지역별 통계 데이터
-
-### 4. 점 플롯 (Dot Plot)
-
-범주형 데이터의 분포를 점의 개수로 표현합니다.
-
-**특징:**
-
-- 범주별 빈도 비교
-- 분포 형태 파악
-- 간단하고 직관적
-
-## 디자인 고려사항
-
-### 점의 크기
-
-점의 크기는 데이터 시각화에서 중요한 요소입니다:
-
-- **너무 작으면**: 보이지 않거나 클릭하기 어려움
-- **너무 크면**: 겹침 현상 발생, 시각적 혼잡도 증가
-- **적절한 크기**: 데이터 포인트 수에 따라 조정 (보통 3-8px)
-
-### 점의 색상
-
-색상은 의미를 전달하는 강력한 도구입니다:
-
-- **의미 있는 색상 매핑**: 범주나 값에 따른 색상 구분
-- **접근성 고려**: 색맹 사용자를 위한 대비
-- **일관성**: 전체 시각화에서 일관된 색상 체계
-
-### 점의 투명도
-
-투명도는 겹침 현상을 해결하는 좋은 방법입니다:
-
-- **겹침 완화**: 투명도를 통해 밀도 표현
-- **시각적 혼잡도 감소**: 배경과의 조화
-- **계층적 표현**: 중요도에 따른 투명도 조정
-
-## 상호작용 요소
-
-### 호버 효과
-
-```jsx
-.on("mouseover", function(event, d) {
-  d3.select(this)
-    .attr("r", 8)
-    .attr("fill", "#EF4444")
-    .attr("stroke", "#000")
-    .attr("stroke-width", 2);
-})
-.on("mouseout", function() {
-  d3.select(this)
-    .attr("r", 5)
-    .attr("fill", "#3B82F6")
-    .attr("stroke", "none");
-});
-```
-
-### 툴팁
-
-```jsx
-const tooltip = d3.select("body")
-  .append("div")
-  .attr("class", "tooltip")
-  .style("opacity", 0);
-
-.on("mouseover", function(event, d) {
-  tooltip.transition()
-    .duration(200)
-    .style("opacity", .9);
-  tooltip.html(`X: ${d.x}<br/>Y: ${d.y}`)
-    .style("left", (event.pageX + 10) + "px")
-    .style("top", (event.pageY - 28) + "px");
-})
-.on("mouseout", function() {
-  tooltip.transition()
-    .duration(500)
-    .style("opacity", 0);
-});
-```
-
-## 성능 최적화
-
-### 많은 데이터 포인트 처리
-
-```jsx
-// Canvas 사용
-const canvas = d3.select("canvas");
-const context = canvas.node().getContext("2d");
-
-// WebGL 사용
-const regl = require("regl");
-const drawPoints = regl({
-  // WebGL 설정
-});
-```
-
-### 데이터 샘플링
-
-```jsx
-// 랜덤 샘플링
-const sampledData =
-  data.length > 1000
-    ? data.filter(() => Math.random() < 1000 / data.length)
-    : data;
-```
-
 ## 마무리
-
-점은 데이터 시각화의 기본 요소이지만, 그 활용법은 무궁무진합니다. 적절한 디자인과 상호작용을 통해 단순한 점들이 강력한 인사이트를 전달할 수 있습니다.
-
-### 핵심 포인트
-
-1. **단순함이 미덕**: 복잡하지 않아도 효과적
-2. **확장성**: 많은 데이터도 처리 가능
-3. **유연성**: 다양한 속성으로 정보 전달
-4. **상호작용**: 사용자 참여 유도
-
-다음 포스트에서는 점을 연결하는 **선(Lines)**에 대해 알아보겠습니다. 선은 점들 간의 관계와 흐름을 표현하는 강력한 시각적 도구입니다.
-
----
-
-**참고 자료:**
-
-- [D3.js 공식 문서](https://d3js.org/)
-- [Data Visualization Best Practices](https://www.storytellingwithdata.com/)
-- [Visualization Design Patterns](https://www.visualizationdesignpatterns.com/)
