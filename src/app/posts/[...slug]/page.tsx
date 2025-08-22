@@ -46,8 +46,14 @@ export default async function PostPage({ params }: PostPageProps) {
   const mainCategory = slug[0];
   const subcategory = slug[1];
 
+  // Check if the second part is actually a subcategory or just a post slug
+  // If it's a known category, treat it as subcategory, otherwise it's just a post slug
+  const isSubcategory = subcategory && getCategoryById(subcategory);
+
   // Get category data for styling
-  const categoryData = getCategoryById(subcategory || mainCategory);
+  const categoryData = getCategoryById(
+    isSubcategory ? subcategory : mainCategory
+  );
   const categoryColor = categoryData?.color || "bg-muted";
 
   const categoryBadgeStyle =
@@ -65,13 +71,13 @@ export default async function PostPage({ params }: PostPageProps) {
     // Add main category if it's data-visualization
     if (mainCategory === "data-visualization") {
       breadcrumbs.push({
-        name: "데이터 표현 100가지",
+        name: "데이터 표현 100가지 방법",
         href: "/category/data-visualization",
       });
     }
 
-    // Add subcategory if it exists
-    if (subcategory) {
+    // Add subcategory only if it's actually a known category
+    if (isSubcategory) {
       breadcrumbs.push({
         name: categoryData?.name || subcategory,
         href: `/category/${subcategory}`,
@@ -162,33 +168,6 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="prose prose-lg dark:prose-invert max-w-none">
               <MDXRemote source={post.content} components={components} />
             </div>
-
-            {/* CodeSandbox/CodePen Embed */}
-            {(post.codesandbox || post.codepen) && (
-              <div className="mt-12 p-6 bg-accent rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">실행 가능한 예제</h3>
-                {post.codesandbox && (
-                  <CodeSandbox
-                    id={post.codesandbox}
-                    title={post.title}
-                    height={500}
-                  />
-                )}
-                {post.codepen && (
-                  <iframe
-                    src={`https://codepen.io/embed/${post.codepen}`}
-                    style={{
-                      width: "100%",
-                      height: "500px",
-                      border: 0,
-                      borderRadius: "4px",
-                      overflow: "hidden",
-                    }}
-                    title={post.title}
-                  />
-                )}
-              </div>
-            )}
           </article>
         </div>
       </div>

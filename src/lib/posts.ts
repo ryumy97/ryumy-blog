@@ -20,28 +20,34 @@ export interface Post extends PostMetadata {
   content: string;
 }
 
-const postsDirectory = path.join(process.cwd(), "content");
+const postsDirectory = path.join(process.cwd(), "src", "content");
 
 export function getPostSlugs(): string[] {
   const slugs: string[] = [];
 
-  // Get all subdirectories in content folder
-  const categoryDirs = fs
-    .readdirSync(postsDirectory, { withFileTypes: true })
-    .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => dirent.name);
+  // Recursive function to find all MDX files in nested directories
+  function findMdxFiles(dir: string, currentPath: string = ""): void {
+    const items = fs.readdirSync(dir, { withFileTypes: true });
 
-  categoryDirs.forEach((category) => {
-    const categoryPath = path.join(postsDirectory, category);
-    if (fs.existsSync(categoryPath)) {
-      const files = fs.readdirSync(categoryPath);
-      files.forEach((file) => {
-        if (file.endsWith(".mdx")) {
-          slugs.push(`${category}/${file.replace(/\.mdx$/, "")}`);
-        }
-      });
-    }
-  });
+    items.forEach((item) => {
+      const fullPath = path.join(dir, item.name);
+      const relativePath = currentPath
+        ? `${currentPath}/${item.name}`
+        : item.name;
+
+      if (item.isDirectory()) {
+        // Recursively search subdirectories
+        findMdxFiles(fullPath, relativePath);
+      } else if (item.isFile() && item.name.endsWith(".mdx")) {
+        // Add MDX file to slugs
+        const slug = relativePath.replace(/\.mdx$/, "");
+        slugs.push(slug);
+      }
+    });
+  }
+
+  // Start searching from the posts directory
+  findMdxFiles(postsDirectory);
 
   return slugs;
 }
@@ -159,23 +165,28 @@ export function getCategories() {
 export function getAllMdxFiles() {
   const mdxFiles: string[] = [];
 
-  // Get all subdirectories in content folder
-  const categoryDirs = fs
-    .readdirSync(postsDirectory, { withFileTypes: true })
-    .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => dirent.name);
+  // Recursive function to find all MDX files in nested directories
+  function findMdxFiles(dir: string, currentPath: string = ""): void {
+    const items = fs.readdirSync(dir, { withFileTypes: true });
 
-  categoryDirs.forEach((category) => {
-    const categoryPath = path.join(postsDirectory, category);
-    if (fs.existsSync(categoryPath)) {
-      const files = fs.readdirSync(categoryPath);
-      files.forEach((file) => {
-        if (file.endsWith(".mdx")) {
-          mdxFiles.push(path.join(category, file));
-        }
-      });
-    }
-  });
+    items.forEach((item) => {
+      const fullPath = path.join(dir, item.name);
+      const relativePath = currentPath
+        ? `${currentPath}/${item.name}`
+        : item.name;
+
+      if (item.isDirectory()) {
+        // Recursively search subdirectories
+        findMdxFiles(fullPath, relativePath);
+      } else if (item.isFile() && item.name.endsWith(".mdx")) {
+        // Add MDX file to mdxFiles
+        mdxFiles.push(relativePath);
+      }
+    });
+  }
+
+  // Start searching from the posts directory
+  findMdxFiles(postsDirectory);
 
   return mdxFiles;
 }

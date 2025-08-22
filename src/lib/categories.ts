@@ -10,7 +10,7 @@ export interface Category {
 export const categories: Category[] = [
   {
     id: "data-visualization",
-    name: "데이터 표현 100가지",
+    name: "데이터 표현 100가지 방법",
     description: "점, 선, 면 등 기초적인 시각적 요소부터 혁신적인 표현까지",
     color: "bg-primary",
     order: 1,
