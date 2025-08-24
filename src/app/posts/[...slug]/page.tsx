@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatDateKorean } from "@/lib/utils";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import CodeSandbox from "@/components/CodeSandbox";
+import CodeRunner from "@/components/CodeRunner";
 import { TransitionIn } from "@/components/TransitionTunnel";
 import { getCategoryById } from "@/lib/categories";
 
@@ -40,6 +41,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const components = {
     CodeSandbox,
+    CodeRunner,
   };
 
   // Determine the main category and subcategory from the slug

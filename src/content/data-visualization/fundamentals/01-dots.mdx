@@ -9,18 +9,17 @@ image: "/images/dots-visualization.jpg"
 
 # 1차원 데이터 표현 - 점
 
-1차원 데이터를 사용하여 가장 기초적인 시각화를 쓰자.
+1차원 데이터를 사용하여 가장 기초적인 시각화를 해보자.
 
 ## 1차원 데이터의 기본 개념
 
 1차원 데이터란 값이 하나인 데이터를 말합니다.
 
-예를 들어,
-만약 우리가 버튼이 눌렸나 안눌렸나를 확인하는 것도,
-공부를 몇시간 했느냐,
-오늘 하루는 몇칼로리 먹었느냐.
+예를 들어, 만약 우리가 버튼이 눌렸나 안눌렸나를 확인하는 것을 컴퓨터가 알아들을수 있는 데이터로 기져온다면, Boolean 타입으로 저장할수 있습니다.
 
-이런 데이터들은 모두 1차원 데이터로 표현할수 있습니다.
+혹은 오늘 하루는 몇칼로리 먹었느냐를 저장한다면 Number 타입으로 저장할수 있습니다.
+
+이런 데이터들은 모두 1차원 데이터라고 우리는 정의할수 있습니다. 하나의 데이터가 얼마만큼 있느냐 (혹은 있거나 없거나) 라는 개념인것이죠.
 
 ## 점
 
@@ -28,6 +27,154 @@ image: "/images/dots-visualization.jpg"
 
 있다와 없다를 표현할수 있는 요소입니다.
 
-<CodeSandbox id="j3hx5z" title="D3.js 점 시각화 예제" height={600} />
+예) 버튼이 눌렸나 안눌렸나를 표현하는 것을 컴퓨터가 알아들을수 있는 데이터로 기져온다면, Boolean 타입으로 저장할수 있습니다.
+
+<CodeRunner
+  title="점 - 1"
+  height={460}
+  html={`
+    <div class="container">
+      <h1>점 - 1</h1>
+      <canvas id="dot-1"></canvas>
+      <button id="button">버튼</button>
+    </div>
+  `}
+  css={`
+    .container {
+      padding: 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  `}
+  js={`
+    const canvas = document.getElementById('dot-1');
+    const ctx = canvas.getContext('2d');
+    
+    const button = document.getElementById('button');
+
+    canvas.width = 200;
+    canvas.height = 200;
+
+    // 버튼이 눌렸는지 여부를 저장하는 변수
+    let isClicked = false;
+
+    button.addEventListener('click', () => {
+      // 버튼이 눌렸는지 여부를 반전시킨다.
+      isClicked = !isClicked;
+
+      // 버튼이 눌렸는지 여부에 따라 점을 그린다.
+      if (isClicked) {
+        ctx.fillStyle = 'steelblue';
+        ctx.fillRect(100, 100, 2, 2);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    });
+
+`}
+/>
+
+또는 버튼이 얼마나 많이 눌렸나도 표현할수 있습니다.
+
+<CodeRunner
+  title="점 - 2"
+  height={460}
+  html={`
+    <div class="container">
+      <h1>점 - 2</h1>
+      <div class="counter-container">
+        Count: <span id="counter">0</span>
+      </div>
+      <canvas id="dot-2"></canvas>
+      <button id="button">버튼</button>
+    </div>
+  `}
+  css={`
+    .container {
+      padding: 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .counter-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  `}
+  js={`
+    const canvas = document.getElementById('dot-2');
+    const ctx = canvas.getContext('2d');
+    
+    const button = document.getElementById('button');
+
+    canvas.width = 200;
+    canvas.height = 200;
+
+    ctx.fillStyle = 'black';
+    // Draw vertical grid lines
+    for (let x = 0; x <= canvas.width; x += 20) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.strokeStyle = '#ddd';
+      ctx.stroke();
+    }
+
+    // Draw horizontal grid lines
+    for (let y = 0; y <= canvas.height; y += 20) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.strokeStyle = '#ddd';
+      ctx.stroke();
+    }
+
+    // 버튼이 눌린 횟수를 저장하는 변수
+    let count = 0;
+
+
+    button.addEventListener('click', () => {
+      // 버튼이 눌린 횟수를 증가시킨다.
+      count++;
+
+      // 버튼이 눌린 횟수에 따라 점을 그린다.
+      ctx.fillStyle = 'steelblue';
+      ctx.fillRect(count * 10, count * 10, 2, 2);
+
+      // 버튼이 눌린 횟수를 표시한다.
+      document.getElementById('counter').textContent = count.toString();
+    });
+
+`}
+/>
 
 ## 마무리
