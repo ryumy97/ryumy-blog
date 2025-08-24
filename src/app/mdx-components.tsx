@@ -1,6 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import { cn } from "@/lib/utils";
-import CodeSandbox from "@/components/CodeSandbox";
+import CodeRunner from "@/components/CodeRunner";
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -135,7 +135,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       />
     ),
     // Custom components
-    CodeSandbox,
+    CodeRunner,
     ...components,
   };
 }

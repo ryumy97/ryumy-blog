@@ -4,8 +4,8 @@ import { Calendar, Tag, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { formatDateKorean } from "@/lib/utils";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import CodeSandbox from "@/components/CodeSandbox";
 import CodeRunner from "@/components/CodeRunner";
+import MDXImage from "@/components/MDXImage";
 import { TransitionIn } from "@/components/TransitionTunnel";
 import { getCategoryById } from "@/lib/categories";
 
@@ -40,8 +40,10 @@ export default async function PostPage({ params }: PostPageProps) {
   }
 
   const components = {
-    CodeSandbox,
     CodeRunner,
+    MDXImage,
+    img: MDXImage,
+    Image: MDXImage,
   };
 
   // Determine the main category and subcategory from the slug

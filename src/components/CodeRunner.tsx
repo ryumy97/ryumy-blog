@@ -1,14 +1,89 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Copy, Check, Eye, Code } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
+import { Copy, Check, Eye, Code } from "lucide-react";
 import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+  Sandpack,
+  SandpackCodeEditor,
+  SandpackPreview,
+  SandpackProvider,
+  SandpackLayout,
+} from "@codesandbox/sandpack-react";
+import { atomDark } from "@codesandbox/sandpack-themes";
+import { aquaBlue } from "@codesandbox/sandpack-themes";
+import { useTheme } from "next-themes";
+import beautify from "js-beautify";
+
+// Formatting functions using js-beautify
+const formatHtml = (code: string): string => {
+  if (!code.trim()) return "<!-- No HTML code -->";
+
+  try {
+    return beautify.html(code, {
+      indent_size: 2,
+      indent_char: " ",
+      max_preserve_newlines: 2,
+      preserve_newlines: true,
+      indent_scripts: "normal",
+      end_with_newline: true,
+      wrap_line_length: 0,
+      indent_inner_html: false,
+      indent_empty_lines: false,
+    });
+  } catch (error) {
+    console.error("Error formatting HTML:", error);
+    return code;
+  }
+};
+
+const formatCss = (code: string): string => {
+  if (!code.trim()) return "/* No CSS code */";
+
+  try {
+    return beautify.css(code, {
+      indent_size: 2,
+      indent_char: " ",
+      selector_separator_newline: false,
+      newline_between_rules: true,
+      preserve_newlines: true,
+      max_preserve_newlines: 2,
+      end_with_newline: true,
+      wrap_line_length: 0,
+      indent_empty_lines: false,
+    });
+  } catch (error) {
+    console.error("Error formatting CSS:", error);
+    return code;
+  }
+};
+
+const formatJs = (code: string): string => {
+  if (!code.trim()) return "// No JavaScript code";
+
+  try {
+    return beautify.js(code, {
+      indent_size: 2,
+      indent_char: " ",
+      max_preserve_newlines: 2,
+      preserve_newlines: true,
+      keep_array_indentation: false,
+      break_chained_methods: false,
+      brace_style: "collapse",
+      space_before_conditional: true,
+      unescape_strings: false,
+      jslint_happy: false,
+      end_with_newline: true,
+      wrap_line_length: 0,
+      comma_first: false,
+      e4x: false,
+      indent_empty_lines: false,
+    });
+  } catch (error) {
+    console.error("Error formatting JavaScript:", error);
+    return code;
+  }
+};
 
 interface CodeRunnerProps {
   html?: string;
@@ -25,134 +100,32 @@ export default function CodeRunner({
   title = "Code Example",
   height = 400,
 }: CodeRunnerProps) {
-  const [copied, setCopied] = useState(false);
   const [showCode, setShowCode] = useState(true);
-  const [panelSizes, setPanelSizes] = useState([50, 50]);
 
-  const dataRef = useRef<{
-    html: string;
-    css: string;
-    js: string;
-  }>({
-    html,
-    css,
-    js,
-  });
+  const theme = useTheme();
 
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [editableHtml, setEditableHtml] = useState(dataRef.current.html);
-  const [editableCss, setEditableCss] = useState(dataRef.current.css);
-  const [editableJs, setEditableJs] = useState(dataRef.current.js);
-
-  useEffect(() => {
-    dataRef.current.html = html;
-    dataRef.current.css = css;
-    dataRef.current.js = js;
-
-    setEditableHtml(dataRef.current.html);
-    setEditableCss(dataRef.current.css);
-    setEditableJs(dataRef.current.js);
-
-    console.log(dataRef.current.html);
-    console.log(dataRef.current.css);
-    console.log(dataRef.current.js);
-
-    runCode();
-  }, [html, css, js]);
-
-  const runCode = () => {
-    if (!iframeRef.current) return;
-
-    const iframe = iframeRef.current;
-    const doc = iframe.contentDocument || iframe.contentWindow?.document;
-
-    if (!doc) return;
-
-    // Clear previous content and scripts
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            ${dataRef.current.css}
-          </style>
-        </head>
-        <body>
-          ${dataRef.current.html}
-          <script>
-            // Clear any existing variables and functions
-            if (typeof window !== 'undefined') {
-              // Remove all properties from window except built-ins
-              Object.keys(window).forEach(key => {
-                if (!['console', 'document', 'window', 'location', 'history', 'navigator', 'screen', 'localStorage', 'sessionStorage'].includes(key)) {
-                  try {
-                    delete window[key];
-                  } catch (e) {
-                    // Ignore errors for non-configurable properties
-                  }
-                }
-              });
-            }
-            
-            // Wrap in try-catch to handle errors gracefully
-            try {
-              ${dataRef.current.js}
-            } catch (error) {
-              console.error('Code execution error:', error);
-            }
-          </script>
-        </body>
-      </html>
-    `);
-    doc.close();
-  };
-
-  const debouncedRunCode = () => {
-    // Clear any existing timeout
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    // Set new timeout for 0.5 seconds (500ms)
-    debounceTimeoutRef.current = setTimeout(() => {
-      runCode();
-    }, 500);
-  };
-
-  const handlePanelResize = (sizes: number[]) => {
-    setPanelSizes(sizes);
-    // Run code immediately after resize
-    runCode();
-  };
-
-  const copyCode = async () => {
-    const fullCode = `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-${dataRef.current.css}
-  </style>
-</head>
-<body>
-${dataRef.current.html}
-  <script>
-${dataRef.current.js}
-  </script>
-</body>
-</html>`;
-
+  // Format the code using custom formatting functions
+  const formattedFiles = useMemo(() => {
     try {
-      await navigator.clipboard.writeText(fullCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy code:", err);
+      const formattedHtml = formatHtml(html);
+      const formattedCss = formatCss(css);
+      const formattedJs = formatJs(js);
+
+      return {
+        "/index.html": formattedHtml,
+        "/styles.css": formattedCss,
+        "/index.js": formattedJs,
+      };
+    } catch (error) {
+      console.error("Error formatting code:", error);
+      // Fallback to unformatted code if formatting fails
+      return {
+        "/index.html": html || "<!-- No HTML code -->",
+        "/styles.css": css || "/* No CSS code */",
+        "/index.js": js || "// No JavaScript code",
+      };
     }
-  };
+  }, [html, css, js]);
 
   return (
     <div className="my-8 border border-border rounded-lg overflow-hidden">
@@ -177,190 +150,32 @@ ${dataRef.current.js}
               </>
             )}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={copyCode}
-            className="flex items-center gap-2"
-          >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" />
-                Copy Code
-              </>
-            )}
-          </Button>
         </div>
       </div>
 
-      {/* Desktop Layout - 2 Column Resizable */}
-      {showCode ? (
-        <div className="hidden md:block">
-          <ResizablePanelGroup
-            direction="horizontal"
-            className="min-h-[400px]"
-            style={{ height: `${height}px` }}
-            onLayout={handlePanelResize}
-          >
-            {/* Left Panel - Code Editor */}
-            <ResizablePanel defaultSize={50} minSize={20} maxSize={80}>
-              <div className="flex flex-col bg-muted/30 h-full overflow-auto">
-                <div className="p-4 border-b border-border">
-                  <h5 className="text-sm font-semibold mb-3 text-muted-foreground">
-                    HTML
-                  </h5>
-                  <Textarea
-                    value={editableHtml}
-                    onChange={(e) => {
-                      dataRef.current.html = e.target.value;
-                      debouncedRunCode();
-                      setEditableHtml(e.target.value);
-                    }}
-                    placeholder="Enter HTML code..."
-                    className="font-mono text-sm min-h-[80px] resize-none"
-                  />
-                </div>
-
-                <div className="p-4 border-b border-border">
-                  <h5 className="text-sm font-semibold mb-3 text-muted-foreground">
-                    CSS
-                  </h5>
-                  <Textarea
-                    value={editableCss}
-                    onChange={(e) => {
-                      dataRef.current.css = e.target.value;
-                      debouncedRunCode();
-                      setEditableCss(e.target.value);
-                    }}
-                    placeholder="Enter CSS code..."
-                    className="font-mono text-sm min-h-[80px] resize-none"
-                  />
-                </div>
-
-                <div className="p-4 flex-1">
-                  <h5 className="text-sm font-semibold mb-3 text-muted-foreground">
-                    JavaScript
-                  </h5>
-                  <Textarea
-                    value={editableJs}
-                    onChange={(e) => {
-                      dataRef.current.js = e.target.value;
-                      debouncedRunCode();
-                      setEditableJs(e.target.value);
-                    }}
-                    placeholder="Enter JavaScript code..."
-                    className="font-mono text-sm h-full resize-none"
-                  />
-                </div>
-              </div>
-            </ResizablePanel>
-
-            {/* Resizable Handle */}
-            <ResizableHandle withHandle />
-
-            {/* Right Panel - Preview */}
-            <ResizablePanel defaultSize={50}>
-              <div className="bg-background h-full">
-                <iframe
-                  ref={iframeRef}
-                  title={title}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    border: "none",
-                    background: "white",
-                  }}
-                  sandbox="allow-scripts allow-same-origin"
-                />
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+      {showCode && (
+        <div style={{ height: `${height}px` }}>
+          <Sandpack
+            template="vanilla"
+            files={formattedFiles}
+            options={{
+              showNavigator: false,
+              showTabs: true,
+              showLineNumbers: true,
+              showInlineErrors: true,
+              wrapContent: true,
+              editorHeight: showCode ? height : 0,
+              showConsoleButton: false,
+              showConsole: false,
+              rtl: true,
+              resizablePanels: true,
+            }}
+            theme={theme.theme === "dark" ? atomDark : aquaBlue}
+            customSetup={{
+              dependencies: {},
+            }}
+          />
         </div>
-      ) : (
-        /* Desktop Preview Only */
-        <></>
-      )}
-
-      {/* Mobile Layout - Stacked */}
-      {showCode ? (
-        <div className="md:hidden">
-          <div className="space-y-4 mb-4">
-            <div className="bg-muted/30 rounded-lg p-4">
-              <h5 className="text-sm font-semibold mb-3 text-muted-foreground">
-                HTML
-              </h5>
-              <Textarea
-                value={editableHtml}
-                onChange={(e) => {
-                  dataRef.current.html = e.target.value;
-                  debouncedRunCode();
-                  setEditableHtml(e.target.value);
-                }}
-                placeholder="Enter HTML code..."
-                className="font-mono text-sm min-h-[100px] resize-none"
-              />
-            </div>
-
-            <div className="bg-muted/30 rounded-lg p-4">
-              <h5 className="text-sm font-semibold mb-3 text-muted-foreground">
-                CSS
-              </h5>
-              <Textarea
-                value={editableCss}
-                onChange={(e) => {
-                  dataRef.current.css = e.target.value;
-                  debouncedRunCode();
-                  setEditableCss(e.target.value);
-                }}
-                placeholder="Enter CSS code..."
-                className="font-mono text-sm min-h-[100px] resize-none"
-              />
-            </div>
-
-            <div className="bg-muted/30 rounded-lg p-4">
-              <h5 className="text-sm font-semibold mb-3 text-muted-foreground">
-                JavaScript
-              </h5>
-              <Textarea
-                value={editableJs}
-                onChange={(e) => {
-                  dataRef.current.js = e.target.value;
-                  debouncedRunCode();
-                  setEditableJs(e.target.value);
-                }}
-                placeholder="Enter JavaScript code..."
-                className="font-mono text-sm min-h-[100px] resize-none"
-              />
-            </div>
-          </div>
-
-          {/* Mobile Preview */}
-          <div
-            className="bg-background rounded-lg border"
-            style={{ height: `${height}px` }}
-          >
-            <iframe
-              ref={iframeRef}
-              title={title}
-              style={{
-                width: "100%",
-                height: "100%",
-                border: "none",
-                background: "white",
-                borderRadius: "0.5rem",
-              }}
-              sandbox="allow-scripts allow-same-origin"
-            />
-          </div>
-        </div>
-      ) : (
-        /* Mobile Preview Only */
-        <></>
       )}
     </div>
   );
