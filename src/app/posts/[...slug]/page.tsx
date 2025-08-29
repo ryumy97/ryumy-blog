@@ -1,11 +1,17 @@
 import { notFound } from "next/navigation";
-import { getPostBySlug, getAllPosts } from "@/lib/posts";
+import {
+  getPostBySlug,
+  getAllPosts,
+  getNextAndPreviousPosts,
+} from "@/lib/posts";
 import { Calendar, Tag, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { formatDateKorean } from "@/lib/utils";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import CodeRunner from "@/components/CodeRunner";
 import MDXImage from "@/components/MDXImage";
+import MDXCode from "@/components/MDXCode";
+import PostNavigation from "@/components/PostNavigation";
 import { TransitionIn } from "@/components/TransitionTunnel";
 import { getCategoryById } from "@/lib/categories";
 
@@ -42,8 +48,10 @@ export default async function PostPage({ params }: PostPageProps) {
   const components = {
     CodeRunner,
     MDXImage,
+    MDXCode,
     img: MDXImage,
     Image: MDXImage,
+    code: MDXCode,
   };
 
   // Determine the main category and subcategory from the slug
@@ -98,6 +106,9 @@ export default async function PostPage({ params }: PostPageProps) {
   };
 
   const breadcrumbs = generateBreadcrumbs();
+
+  // Get next and previous posts
+  const { nextPost, previousPost } = getNextAndPreviousPosts(fullSlug);
 
   return (
     <TransitionIn>
@@ -169,9 +180,12 @@ export default async function PostPage({ params }: PostPageProps) {
             </header>
 
             {/* Post Content */}
-            <div className="max-w-none [&>h1]:text-4xl [&>h1]:font-bold [&>h1]:mb-8 [&>h1]:mt-12 [&>h2]:text-3xl [&>h2]:font-semibold [&>h2]:mb-6 [&>h2]:mt-10 [&>h3]:text-2xl [&>h3]:font-semibold [&>h3]:mb-4 [&>h3]:mt-8 [&>h4]:text-xl [&>h4]:font-semibold [&>h4]:mb-3 [&>h4]:mt-6 [&>p]:text-base [&>p]:leading-7 [&>p]:mb-6 [&>p]:text-muted-foreground [&>strong]:text-foreground [&>strong]:font-semibold [&>code]:text-sm [&>code]:bg-muted [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>pre]:bg-muted [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>blockquote]:border-l-4 [&>blockquote]:border-primary [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:text-muted-foreground [&>ul]:my-6 [&>ul]:list-disc [&>ul]:pl-6 [&>ol]:my-6 [&>ol]:list-decimal [&>ol]:pl-6 [&>li]:my-2 [&>hr]:my-8 [&>hr]:border-border">
+            <div className="max-w-none [&>h1]:text-4xl [&>h1]:font-bold [&>h1]:mb-8 [&>h1]:mt-12 [&>h2]:text-3xl [&>h2]:font-semibold [&>h2]:mb-6 [&>h2]:mt-10 [&>h3]:text-2xl [&>h3]:font-semibold [&>h3]:mb-4 [&>h3]:mt-8 [&>h4]:text-xl [&>h4]:font-semibold [&>h4]:mb-3 [&>h4]:mt-6 [&>p]:text-base [&>p]:leading-7 [&>p]:mb-6 [&>p]:text-muted-foreground [&>strong]:text-foreground [&>strong]:font-semibold [&>pre]:bg-muted [&>pre]:p-4 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>blockquote]:border-l-4 [&>blockquote]:border-primary [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:text-muted-foreground [&>ul]:my-6 [&>ul]:list-disc [&>ul]:pl-6 [&>ol]:my-6 [&>ol]:list-decimal [&>ol]:pl-6 [&>li]:my-2 [&>hr]:my-8 [&>hr]:border-border">
               <MDXRemote source={post.content} components={components} />
             </div>
+
+            {/* Post Navigation */}
+            <PostNavigation nextPost={nextPost} previousPost={previousPost} />
           </article>
         </div>
       </div>

@@ -1,19 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Eye, Code } from "lucide-react";
-import {
-  Sandpack,
-  SandpackCodeEditor,
-  SandpackPreview,
-  SandpackProvider,
-  SandpackLayout,
-} from "@codesandbox/sandpack-react";
-import { atomDark } from "@codesandbox/sandpack-themes";
-import { aquaBlue } from "@codesandbox/sandpack-themes";
-import { useTheme } from "next-themes";
+import { Sandpack } from "@codesandbox/sandpack-react";
+import { aquaBlue, atomDark } from "@codesandbox/sandpack-themes";
 import beautify from "js-beautify";
+import { Code, Eye } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useMemo, useState } from "react";
 
 // Formatting functions using js-beautify
 const formatHtml = (code: string): string => {

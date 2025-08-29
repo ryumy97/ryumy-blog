@@ -1,0 +1,340 @@
+---
+title: "2차원 데이터 표현 - 선?"
+description: "2차원이란 데이터가 두개지요"
+date: "2025-08-25"
+category: ["fundamentals", "data-visualization"]
+tags: ["선", "기본요소", "시각화", "canvas"]
+image: "/images/dots-visualization.jpg"
+---
+
+# 2차원 데이터 표현 - 선
+
+2차원이다. 데이터가 두개다. 그럼 두개의 데이터를 어떻게 표현할까?
+
+사실 제목을 보고 선이라고 생각하기 쉽지만, 아쉽게도 점으로 표현하기가 쉽다.
+
+데이터가 두개, x 와 y 라고 하면, 바로 생각나는것은 그래프 상의 점을 찍는것이다. 그럼 점을 찍는 코드를 작성해보자.
+
+<CodeRunner
+  title="선 - 1"
+  height={460}
+  html={`
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <div class="container">
+          <h1>선 - 1</h1>
+          <canvas id="line-1"></canvas>
+          <button id="button">버튼</button>
+        </div>
+      </body>
+    </html>
+  `}
+  css={`
+    .container {
+      padding: 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  `}
+  js={`
+    import "./styles.css";
+
+    const canvas = document.getElementById('line-1');
+    const ctx = canvas.getContext('2d');
+
+    const button = document.getElementById('button');
+
+    canvas.width = 200;
+    canvas.height = 200;
+
+    // 점 좌표를 저장하는 변수
+    let x = 0;
+    let y = 0;
+
+    // 점 좌표를 무작위로 생성하는 함수
+    function generateRandomData() {
+      x = Math.random() * 200;
+      y = Math.random() * 200;
+    }
+
+    // 점 데이터 생성
+    generateRandomData();
+
+    // 점 데이터 표현
+    function drawDot(x, y) {
+      ctx.fillStyle = 'steelblue';
+      ctx.beginPath();
+      ctx.ellipse(x, y, 10, 10, 0, 0, 2 * Math.PI);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // 캔버스 랜더링
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawDot(x, y);
+    }
+
+    button.addEventListener('click', () => {
+      // 점 데이터 제어한다.
+      generateRandomData();
+
+      // 점 데이터를 시간화 한다.
+      render();
+    });
+
+    render();
+
+`}
+/>
+
+위의 예시는 당신에게 너무 쉬울것이다. 저번에 배웠던 예시와 비슷하다.
+캔버스가 있고, 점이라는 데이터를 그 위에 시각화 하는 코드를 작성한것이다.
+
+다른점이 있다면 데이터가 두가지, x 와 y 좌표 값이라는것이다.
+
+그럼 이제 선을 그려보자.
+
+## 2차원 데이터?
+
+2차원 데이터를 선으로 표현하기 위해서는 두개의 점을 잇는 선을 그려야 한다.
+두개의 점을 잇는 선을 그리기위해서는 두개의 점의 좌표가 필요하다는 뜻이다.
+
+그럼 변수가 4개가 되는것이 아니냐? 1차원 데이터의 정의에서 벗어나는것이 아니냐?
+반은 맞고 반은 틀린 이야기다.
+
+전의 예시에서 버튼을 얼마나 눌렀는지를 저장하는 변수가 있었다. 변수는 하나였지만 표현을 할때에 for loop 을 사용하여 여러번 점을 그렸다.
+변수는 하나이지만 데이터는 여러개였다. 0이라는 기준점에서 부터 그 변수까지의 값을 표현한것이다.
+
+만약에 x와 y값을 하나로 지정하고 그 0,0 이라는 기준점에서 부터 선을 그리면 2차원 데이터를 선으로 표현할수 있다.
+이러한 방식으로 데이터를 표현하는것은 보통 백터라고 부를수 있다.
+
+## 선을 그리자.
+
+<CodeRunner
+  title="선 - 2"
+  height={460}
+  html={`
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <div class="container">
+          <h1>선 - 2</h1>
+          <canvas id="line-2"></canvas>
+          <button id="button">버튼</button>
+        </div>
+      </body>
+    </html>
+  `}
+  css={`
+    .container {
+      padding: 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  `}
+  js={`
+    import "./styles.css";
+
+    const canvas = document.getElementById('line-2');
+    const ctx = canvas.getContext('2d');
+
+    const button = document.getElementById('button');
+
+    canvas.width = 200;
+    canvas.height = 200;
+
+    // 좌표를 저장하는 변수
+    let x = 0;
+    let y = 0;
+
+    // 좌표를 무작위로 생성하는 함수
+    function generateRandomData() {
+      x = Math.random() * 200;
+      y = Math.random() * 200;
+    }
+
+    // 데이터 생성
+    generateRandomData();
+
+    // 라인 데이터 표현
+    function drawLine(x, y) {
+      ctx.strokeStyle = 'steelblue';
+      ctx.beginPath();
+      ctx.moveTo(0, 200);
+      ctx.lineTo(x, 200 - y);
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    // 캔버스 랜더링
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawLine(x, y);
+    }
+
+    button.addEventListener('click', () => {
+      // 데이터 제어한다.
+      generateRandomData();
+
+      // 데이터를 시간화 한다.
+      render();
+    });
+
+    render();
+
+`}
+/>
+
+우리는 이것을 2차원 데이터를 선으로 표현하는 예시라고 할수 있다.
+0,0 이라는 기준점을 사용하지 않고 점 두개를 사용해서 첫번째 점에서 두번째 점으로 잇는 코드를 생성해보자
+
+<CodeRunner
+  title="선 - 3"
+  height={460}
+  html={`
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <div class="container">
+          <h1>선 - 3</h1>
+          <canvas id="line-3"></canvas>
+          <button id="button">버튼</button>
+        </div>
+      </body>
+    </html>
+  `}
+  css={`
+    .container {
+      padding: 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  `}
+  js={`
+    import "./styles.css";
+
+    const canvas = document.getElementById('line-3');
+    const ctx = canvas.getContext('2d');
+
+    const button = document.getElementById('button');
+
+    canvas.width = 200;
+    canvas.height = 200;
+
+    // 좌표를 저장하는 변수 1
+    let x = 0;
+    let y = 0;
+
+    // 좌표를 저장하는 변수 2
+    let x2 = 0;
+    let y2 = 0;
+
+    // 좌표를 무작위로 생성하는 함수
+    function generateRandomData() {
+      x = Math.random() * 200;
+      y = Math.random() * 200;
+
+      x2 = Math.random() * 200;
+      y2 = Math.random() * 200;
+    }
+
+    // 데이터 생성
+    generateRandomData();
+
+    // 라인 데이터 표현
+    function drawLine(x, y, x2, y2) {
+      ctx.strokeStyle = 'steelblue';
+      ctx.beginPath();
+      ctx.lineTo(x, 200 - y);
+      ctx.lineTo(x2, 200 - y2);
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    // 캔버스 랜더링
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawLine(x, y, x2, y2);
+    }
+
+    button.addEventListener('click', () => {
+      // 점 데이터 제어한다.
+      generateRandomData();
+
+      // 점 데이터를 시간화 한다.
+      render();
+    });
+
+    render();
+
+`}
+/>
+
+항상 범용성을 생각하며 코드를 작성하는것이 중요하다. 만약에 선이 2개가 아니라 3개가 필요하다면?
+혹은 100개가 필요하다면? N개의 선을 이어서 그리는 코드를 생각해보자. 그러기 위해서는 변수를 깔끔하게 정리하는것이 중요하다.
+
+변수 x, y를 하나의 그룹으로 생각하고, 변수 x2, y2를 하나의 그룹으로 생각하자.
+클래스를 만들어 관리를 하면 같은 그룹의 변수를 하나의 객체로 관리할수 있다.
+
+```js
+class Position {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+class Line {
+  constructor(position1, position2) {
+    this.position1 = position1;
+    this.position2 = position2;
+  }
+}
+```
+
+선 다섯개를 이어서 그리는 코드를 작성해보자.
+
+## 데이터를 표현하는 방법
+
+## 마무리

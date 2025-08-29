@@ -146,22 +146,45 @@ export function getFeaturedPosts(): Post[] {
   return getAllPosts().filter((post) => post.featured);
 }
 
+export function getNextAndPreviousPosts(currentSlug: string): {
+  nextPost: Post | null;
+  previousPost: Post | null;
+} {
+  const allPosts = getAllPosts();
+  const currentIndex = allPosts
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .findIndex((post) => post.slug === currentSlug);
+
+  if (currentIndex === -1) {
+    return { nextPost: null, previousPost: null };
+  }
+
+  const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+  const previousPost =
+    currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+
+  return { nextPost, previousPost };
+}
+
 export function getCategories() {
   const posts = getAllPosts();
-  const categories = posts.reduce((acc, post) => {
-    const postCategories = Array.isArray(post.category)
-      ? post.category
-      : [post.category];
+  const categories = posts.reduce(
+    (acc, post) => {
+      const postCategories = Array.isArray(post.category)
+        ? post.category
+        : [post.category];
 
-    postCategories.forEach((cat) => {
-      if (!acc[cat]) {
-        acc[cat] = 0;
-      }
-      acc[cat]++;
-    });
+      postCategories.forEach((cat) => {
+        if (!acc[cat]) {
+          acc[cat] = 0;
+        }
+        acc[cat]++;
+      });
 
-    return acc;
-  }, {} as Record<string, number>);
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   return categories;
 }

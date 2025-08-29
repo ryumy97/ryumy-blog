@@ -1,6 +1,8 @@
 import type { MDXComponents } from "mdx/types";
 import { cn } from "@/lib/utils";
 import CodeRunner from "@/components/CodeRunner";
+import MDXCode from "@/components/MDXCode";
+import ThemeShowcase from "@/components/ThemeShowcase";
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -125,17 +127,32 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {...props}
       />
     ),
-    code: ({ className, ...props }) => (
-      <code
-        className={cn(
-          "relative rounded bg-gray-100 px-[0.3rem] py-[0.2rem] font-mono text-sm dark:bg-gray-800",
-          className
-        )}
-        {...props}
-      />
-    ),
+    code: ({ className, children, ...props }) => {
+      // Check if this is a code block (has language class)
+      if (className && className.includes("language-")) {
+        return (
+          <MDXCode key={children} className={className} {...props}>
+            {children as string}
+          </MDXCode>
+        );
+      }
+
+      // Inline code
+      return (
+        <code
+          className={cn(
+            "relative rounded bg-gray-100 px-[0.3rem] py-[0.2rem] font-mono text-sm dark:bg-gray-800",
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
     // Custom components
     CodeRunner,
+    ThemeShowcase,
     ...components,
   };
 }
