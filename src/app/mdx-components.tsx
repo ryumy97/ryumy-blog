@@ -1,6 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 import { cn } from "@/lib/utils";
-import CodeRunner from "@/components/CodeRunner";
+import CodeRunner, { createFiles } from "@/components/CodeRunner";
 import MDXCode from "@/components/MDXCode";
 import ThemeShowcase from "@/components/ThemeShowcase";
 
