@@ -1,406 +1,286 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text, Line } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { animate } from "motion";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
-interface Node {
-  id: string;
-  position: [number, number, number];
-  label: string;
+class Node {
+  public id: number;
+  public index: number = 0;
+  public position: [number, number, number];
+  public createdAt: number;
+  public color: string;
+  public size: number;
+
+  constructor(
+    id: number,
+    position: [number, number, number],
+    createdAt: number,
+    color: string
+  ) {
+    this.id = id;
+    this.position = position;
+    this.createdAt = createdAt;
+    this.color = color;
+    this.size = 0;
+  }
 }
 
-interface Edge {
-  from: string;
-  to: string;
-  weight?: number;
+class Edge {
+  public from: Node;
+  public to: Node;
+  public createdAt: number;
+
+  constructor(from: Node, to: Node, createdAt: number) {
+    this.from = from;
+    this.to = to;
+    this.createdAt = createdAt;
+  }
 }
 
-// 3D Node Component
-function Node3D({
-  node,
-  position,
-  selected,
-  onSelect,
-  hovered,
-  onHover,
-}: {
-  node: Node;
-  position: [number, number, number];
-  selected: boolean;
-  onSelect: () => void;
-  hovered: boolean;
-  onHover: (hover: boolean) => void;
-}) {
-  const meshRef = useRef<THREE.Mesh>(null);
+class ParticleSystem {
+  private nodes: Node[];
+  private edges: Edge[];
 
-  // Animate node rotation
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.elapsedTime * 0.2;
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.3;
+  public nextNodeId: number = 0;
+
+  public colorArray: Float32Array = new Float32Array(0);
+  public sizeArray: Float32Array = new Float32Array(0);
+  public positionArray: Float32Array = new Float32Array(0);
+
+  public colorAttribute: THREE.BufferAttribute = new THREE.BufferAttribute(
+    this.colorArray,
+    3
+  );
+  public positionAttribute: THREE.BufferAttribute = new THREE.BufferAttribute(
+    this.positionArray,
+    3
+  );
+  public sizeAttribute: THREE.BufferAttribute = new THREE.BufferAttribute(
+    this.sizeArray,
+    1
+  );
+
+  public needsUpdate: boolean = false;
+
+  constructor(nodes: Node[], edges: Edge[]) {
+    this.nodes = nodes;
+    this.edges = edges;
+
+    this.updateAttributes();
+  }
+
+  public addNode(
+    position: [number, number, number],
+    color: string,
+    time: number
+  ) {
+    const newNode = new Node(this.nextNodeId, position, time, color);
+    this.nextNodeId++;
+    this.nodes.push(newNode);
+
+    this.updateAttributes();
+
+    const updateNodeAttributesBinded = (node: Node) => {
+      this.updateNodeAttributes(node);
+    };
+
+    animate(0, 1, {
+      onUpdate(latest) {
+        newNode.size = latest;
+        updateNodeAttributesBinded(newNode);
+      },
+    });
+  }
+
+  public addNodeFrom(
+    id: number,
+    to: {
+      position: [number, number, number];
+      color: string;
+      time: number;
     }
+  ) {
+    const from = this.nodes.find((n) => n.id === id);
+    if (!from) {
+      throw new Error(`From node with id ${id} not found`);
+    }
+
+    const newNode = new Node(this.nextNodeId, to.position, to.time, to.color);
+    this.nextNodeId++;
+    this.nodes.push(newNode);
+    this.edges.push(new Edge(from, newNode, to.time));
+
+    this.updateAttributes();
+  }
+
+  private updateAttributes() {
+    this.colorArray = new Float32Array(this.nodes.length * 3);
+    this.sizeArray = new Float32Array(this.nodes.length);
+    this.positionArray = new Float32Array(this.nodes.length * 3);
+
+    this.nodes.forEach((node, i) => {
+      this.positionArray[i * 3] = node.position[0];
+      this.positionArray[i * 3 + 1] = node.position[1];
+      this.positionArray[i * 3 + 2] = node.position[2];
+
+      const color = new THREE.Color(node.color);
+      this.colorArray[i * 3] = color.r;
+      this.colorArray[i * 3 + 1] = color.g;
+      this.colorArray[i * 3 + 2] = color.b;
+
+      this.sizeArray[i] = node.size;
+
+      node.index = i;
+    });
+
+    this.colorAttribute = new THREE.BufferAttribute(this.colorArray, 3);
+    this.sizeAttribute = new THREE.BufferAttribute(this.sizeArray, 1);
+    this.positionAttribute = new THREE.BufferAttribute(this.positionArray, 3);
+
+    this.needsUpdate = true;
+  }
+
+  private updateNodeAttributes(node: Node) {
+    this.positionArray[node.index * 3] = node.position[0];
+    this.positionArray[node.index * 3 + 1] = node.position[1];
+    this.positionArray[node.index * 3 + 2] = node.position[2];
+
+    this.colorArray[node.index * 3] = new THREE.Color(node.color).r;
+    this.colorArray[node.index * 3 + 1] = new THREE.Color(node.color).g;
+    this.colorArray[node.index * 3 + 2] = new THREE.Color(node.color).b;
+
+    this.sizeArray[node.index] = node.size;
+
+    this.needsUpdate = true;
+  }
+}
+
+const vertexShader = /* glsl */ `
+  attribute float size;
+  attribute vec3 color;
+  
+  varying vec3 vColor;
+
+  uniform float uSize;
+
+  void main() {
+    vColor = color;
+
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+    
+    gl_PointSize = size * uSize * (300.0 / -mvPosition.z);
+  }
+`;
+
+const fragmentShader = /* glsl */ `
+  varying vec3 vColor;
+  uniform float uOpacity;
+
+  void main() {
+    float dist = length(gl_PointCoord - vec2(0.5));
+    if (dist > 0.5) discard;
+
+    gl_FragColor = vec4(vColor, uOpacity);
+  }
+`;
+
+function PointsScene() {
+  const pointsRef = useRef<THREE.Points>(null);
+  const pointsGeometryRef = useRef<THREE.BufferGeometry>(null);
+  const linesGeometryRef = useRef<THREE.BufferGeometry>(null);
+  const pointsShaderRef = useRef<THREE.ShaderMaterial | null>(null);
+  const linesShaderRef = useRef<THREE.ShaderMaterial | null>(null);
+
+  const { gl, clock } = useThree();
+  const particleSystem = useMemo(() => new ParticleSystem([], []), []);
+
+  const pointsMaterial = useMemo(() => {
+    const pointsMaterial = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uSize: { value: 1 },
+        uOpacity: { value: 1 },
+      },
+    });
+
+    pointsShaderRef.current = pointsMaterial;
+    return pointsMaterial;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      pointsShaderRef.current?.dispose();
+    };
+  }, []);
+
+  useEffect(() => {
+    particleSystem.addNode([0, 0, 0], "#3dd98b", clock.elapsedTime);
+  }, [particleSystem]);
+
+  useEffect(() => {
+    if (!pointsShaderRef.current) return;
+    pointsShaderRef.current.uniforms.uSize.value = 18 * gl.getPixelRatio();
+  }, [gl]);
+
+  useFrame(() => {
+    if (!pointsGeometryRef.current) return;
+
+    if (particleSystem.needsUpdate) {
+      pointsGeometryRef.current.setAttribute(
+        "position",
+        particleSystem.positionAttribute
+      );
+      pointsGeometryRef.current.setAttribute(
+        "color",
+        particleSystem.colorAttribute
+      );
+      pointsGeometryRef.current.setAttribute(
+        "size",
+        particleSystem.sizeAttribute
+      );
+
+      pointsGeometryRef.current.attributes.position.needsUpdate = true;
+      pointsGeometryRef.current.attributes.color.needsUpdate = true;
+      pointsGeometryRef.current.attributes.size.needsUpdate = true;
+
+      particleSystem.needsUpdate = false;
+    }
+
+    pointsMaterial.needsUpdate = true;
   });
 
-  const color = selected ? "#fec463" : hovered ? "#ec4b6e" : "#3dd98b";
-  const scale = selected ? 1.3 : hovered ? 1.15 : 1;
-
-  return (
-    <group position={position}>
-      <mesh
-        ref={meshRef}
-        onClick={onSelect}
-        onPointerOver={() => onHover(true)}
-        onPointerOut={() => onHover(false)}
-        scale={scale}
-      >
-        <icosahedronGeometry args={[0.5, 0]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={0.3}
-          metalness={0.7}
-          roughness={0.3}
-        />
-      </mesh>
-      <Text
-        position={[0, 0.8, 0]}
-        fontSize={0.3}
-        color="#fdfdfd"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.02}
-        outlineColor="#4d3f32"
-      >
-        {node.label}
-      </Text>
-    </group>
-  );
-}
-
-// 3D Edge Component
-function Edge3D({
-  from,
-  to,
-  nodes,
-  selected,
-}: {
-  from: string;
-  to: string;
-  nodes: Node[];
-  selected: boolean;
-}) {
-  const fromNode = nodes.find((n) => n.id === from);
-  const toNode = nodes.find((n) => n.id === to);
-
-  if (!fromNode || !toNode) return null;
-
-  const points = [
-    new THREE.Vector3(...fromNode.position),
-    new THREE.Vector3(...toNode.position),
-  ];
-
-  const color = selected ? "#fec463" : "#a8b4c7";
-  const lineWidth = selected ? 3 : 1;
-
-  return (
-    <Line
-      points={points}
-      color={color}
-      lineWidth={lineWidth}
-      transparent
-      opacity={selected ? 0.9 : 0.5}
-    />
-  );
-}
-
-// Main 3D Scene Component
-function GraphScene({
-  nodes,
-  edges,
-  selectedNode,
-  onNodeSelect,
-  hoveredNode,
-  onNodeHover,
-  selectedEdges,
-}: {
-  nodes: Node[];
-  edges: Edge[];
-  selectedNode: string | null;
-  onNodeSelect: (nodeId: string) => void;
-  hoveredNode: string | null;
-  onNodeHover: (nodeId: string | null) => void;
-  selectedEdges: Set<string>;
-}) {
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1} />
-      <pointLight position={[-10, -10, -10]} intensity={0.5} />
-      <directionalLight position={[0, 10, 5]} intensity={0.5} />
-
-      {/* Render edges */}
-      {edges.map((edge, idx) => {
-        const edgeKey = `${edge.from}-${edge.to}`;
-        const reverseKey = `${edge.to}-${edge.from}`;
-        const isSelected =
-          selectedEdges.has(edgeKey) || selectedEdges.has(reverseKey);
-        return (
-          <Edge3D
-            key={idx}
-            from={edge.from}
-            to={edge.to}
-            nodes={nodes}
-            selected={isSelected}
-          />
-        );
-      })}
-
-      {/* Render nodes */}
-      {nodes.map((node) => (
-        <Node3D
-          key={node.id}
-          node={node}
-          position={node.position}
-          selected={selectedNode === node.id}
-          onSelect={() => onNodeSelect(node.id)}
-          hovered={hoveredNode === node.id}
-          onHover={(hover) => onNodeHover(hover ? node.id : null)}
-        />
-      ))}
-
-      <OrbitControls
-        enableDamping
-        dampingFactor={0.05}
-        minDistance={5}
-        maxDistance={20}
-        autoRotate={false}
-      />
+      <points ref={pointsRef}>
+        <bufferGeometry ref={pointsGeometryRef} />
+        <primitive object={pointsMaterial} attach="material" />
+      </points>
+      <lineSegments>
+        <bufferGeometry ref={linesGeometryRef} />
+        <lineBasicMaterial color="white" linewidth={1} />
+      </lineSegments>
     </>
   );
 }
 
-export default function EdgeNodePage() {
-  const [nodes, setNodes] = useState<Node[]>([
-    { id: "A", position: [-2, 2, 0], label: "A" },
-    { id: "B", position: [2, 2, 0], label: "B" },
-    { id: "C", position: [0, 0, 2], label: "C" },
-    { id: "D", position: [-2, -2, 0], label: "D" },
-    { id: "E", position: [2, -2, 0], label: "E" },
-    { id: "F", position: [0, 0, -2], label: "F" },
-    { id: "G", position: [0, 3, 0], label: "G" },
-    { id: "H", position: [0, -3, 0], label: "H" },
-  ]);
-
-  const [edges, setEdges] = useState<Edge[]>([
-    { from: "A", to: "B" },
-    { from: "A", to: "C" },
-    { from: "A", to: "D" },
-    { from: "B", to: "C" },
-    { from: "B", to: "E" },
-    { from: "C", to: "D" },
-    { from: "C", to: "E" },
-    { from: "C", to: "F" },
-    { from: "D", to: "E" },
-    { from: "E", to: "F" },
-    { from: "A", to: "G" },
-    { from: "B", to: "G" },
-    { from: "D", to: "H" },
-    { from: "E", to: "H" },
-  ]);
-
-  const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-
-  // Calculate selected edges (edges connected to selected node)
-  const selectedEdges = useMemo(() => {
-    if (!selectedNode) return new Set<string>();
-    const edgeSet = new Set<string>();
-    edges.forEach((edge) => {
-      if (edge.from === selectedNode || edge.to === selectedNode) {
-        edgeSet.add(`${edge.from}-${edge.to}`);
-      }
-    });
-    return edgeSet;
-  }, [selectedNode, edges]);
-
-  // Get neighbors of selected node
-  const neighbors = useMemo(() => {
-    if (!selectedNode) return [];
-    return edges
-      .filter((e) => e.from === selectedNode || e.to === selectedNode)
-      .map((e) => (e.from === selectedNode ? e.to : e.from));
-  }, [selectedNode, edges]);
-
-  const handleNodeSelect = (nodeId: string) => {
-    setSelectedNode(selectedNode === nodeId ? null : nodeId);
-  };
-
-  const selectedNodeData = nodes.find((n) => n.id === selectedNode);
-
+export default function Page() {
   return (
-    <div className="min-h-screen bg-background font-sans">
-      <main className="container mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8">
-          <Link
-            href="/"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← Back to pages
-          </Link>
-          <h1 className="mt-4 text-4xl font-bold tracking-tight text-foreground">
-            3D Edge-Node Graph
-          </h1>
-          <p className="mt-2 text-lg text-muted-foreground">
-            Interactive 3D visualization of a graph with nodes and edges
-          </p>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Controls Panel */}
-          <div className="lg:col-span-1 space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Controls</CardTitle>
-                <CardDescription>
-                  Interact with the 3D graph visualization
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">Instructions:</div>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Click and drag to rotate the camera</li>
-                    <li>Scroll to zoom in/out</li>
-                    <li>Click nodes to select them</li>
-                    <li>Hover over nodes to highlight</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">Graph Statistics:</div>
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    <div>Nodes: {nodes.length}</div>
-                    <div>Edges: {edges.length}</div>
-                  </div>
-                </div>
-
-                {selectedNode && selectedNodeData && (
-                  <div className="rounded-lg border p-4 bg-muted/50">
-                    <div className="text-sm font-medium mb-2">
-                      Selected Node: {selectedNodeData.label}
-                    </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div>
-                        Position: ({selectedNodeData.position.join(", ")})
-                      </div>
-                      <div>Neighbors: {neighbors.length}</div>
-                      <div className="mt-2">
-                        Connected to: {neighbors.join(", ")}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedNode(null)}
-                  disabled={!selectedNode}
-                  className="w-full"
-                >
-                  Clear Selection
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Node List</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {nodes.map((node) => (
-                    <Button
-                      key={node.id}
-                      variant={selectedNode === node.id ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleNodeSelect(node.id)}
-                      className="w-full justify-start"
-                    >
-                      {node.label} - ({node.position.join(", ")})
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Legend</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-[#3dd98b]" />
-                  <span>Default Node</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-[#ec4b6e]" />
-                  <span>Hovered Node</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-[#fec463]" />
-                  <span>Selected Node</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-4 bg-[#a8b4c7]" />
-                  <span>Default Edge</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-4 bg-[#fec463]" />
-                  <span>Selected Edge</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 3D Canvas */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>3D Visualization</CardTitle>
-                <CardDescription>
-                  Rotate, zoom, and explore the graph in 3D space
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full h-[600px] rounded-lg overflow-hidden bg-[#2e323f]">
-                  <Canvas camera={{ position: [5, 5, 5], fov: 50 }}>
-                    <GraphScene
-                      nodes={nodes}
-                      edges={edges}
-                      selectedNode={selectedNode}
-                      onNodeSelect={handleNodeSelect}
-                      hoveredNode={hoveredNode}
-                      onNodeHover={setHoveredNode}
-                      selectedEdges={selectedEdges}
-                    />
-                  </Canvas>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
-    </div>
+    <Canvas
+      className="fixed inset-0 h-full w-full"
+      camera={{ position: [4, 3, 6], fov: 45 }}
+    >
+      <color attach="background" args={["#2e323f"]} />
+      <ambientLight intensity={0.4} />
+      <pointLight position={[6, 6, 6]} intensity={0.9} />
+      <pointLight position={[-4, -5, -6]} intensity={0.3} />
+      <PointsScene />
+    </Canvas>
   );
 }
