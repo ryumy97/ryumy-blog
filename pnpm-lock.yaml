@@ -44,6 +44,9 @@ importers:
       three:
         specifier: ^0.181.0
         version: 0.181.0
+      tunnel-rat:
+        specifier: ^0.1.2
+        version: 0.1.2(@types/react@19.2.2)(react@19.2.0)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.2.0

@@ -1,7 +1,16 @@
 "use client";
 
+import { TunnelIn } from "@/components/tunnel";
+import {
+  Card,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { animate } from "motion";
+import { animate, delay, spring } from "motion";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -87,8 +96,12 @@ class ParticleSystem {
     };
 
     animate(0, 1, {
+      type: spring,
+      stiffness: 400,
+      damping: 20,
       onUpdate(latest) {
         newNode.size = latest;
+
         updateNodeAttributesBinded(newNode);
       },
     });
@@ -113,6 +126,21 @@ class ParticleSystem {
     this.edges.push(new Edge(from, newNode, to.time));
 
     this.updateAttributes();
+
+    const updateNodeAttributesBinded = (node: Node) => {
+      this.updateNodeAttributes(node);
+    };
+
+    animate(0, 1, {
+      type: spring,
+      stiffness: 400,
+      damping: 20,
+      onUpdate(latest) {
+        newNode.size = latest;
+
+        updateNodeAttributesBinded(newNode);
+      },
+    });
   }
 
   private updateAttributes() {
@@ -187,15 +215,14 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
-function PointsScene() {
+function PointsScene({ particleSystem }: { particleSystem: ParticleSystem }) {
   const pointsRef = useRef<THREE.Points>(null);
   const pointsGeometryRef = useRef<THREE.BufferGeometry>(null);
   const linesGeometryRef = useRef<THREE.BufferGeometry>(null);
   const pointsShaderRef = useRef<THREE.ShaderMaterial | null>(null);
   const linesShaderRef = useRef<THREE.ShaderMaterial | null>(null);
 
-  const { gl, clock } = useThree();
-  const particleSystem = useMemo(() => new ParticleSystem([], []), []);
+  const { gl, clock, camera } = useThree();
 
   const pointsMaterial = useMemo(() => {
     const pointsMaterial = new THREE.ShaderMaterial({
@@ -219,10 +246,6 @@ function PointsScene() {
       pointsShaderRef.current?.dispose();
     };
   }, []);
-
-  useEffect(() => {
-    particleSystem.addNode([0, 0, 0], "#3dd98b", clock.elapsedTime);
-  }, [particleSystem]);
 
   useEffect(() => {
     if (!pointsShaderRef.current) return;
@@ -256,6 +279,8 @@ function PointsScene() {
     pointsMaterial.needsUpdate = true;
   });
 
+  //   camera.lookAt();
+
   return (
     <>
       <points ref={pointsRef}>
@@ -264,8 +289,46 @@ function PointsScene() {
       </points>
       <lineSegments>
         <bufferGeometry ref={linesGeometryRef} />
-        <lineBasicMaterial color="white" linewidth={1} />
+        <lineBasicMaterial color="#878d97" linewidth={1} />
       </lineSegments>
+    </>
+  );
+}
+
+function Scene() {
+  const particleSystem = useMemo(() => new ParticleSystem([], []), []);
+
+  const { clock, camera } = useThree();
+
+  useEffect(() => {
+    delay(() => {
+      particleSystem.addNode([0, 0, 0], "#3dd98b", clock.elapsedTime);
+    }, 0.1);
+
+    delay(() => {
+      particleSystem.addNodeFrom(0, {
+        position: [1, 0, 0],
+        color: "#3dd98b",
+        time: clock.elapsedTime,
+      });
+    }, 1.1);
+  }, [particleSystem]);
+
+  return (
+    <>
+      <PointsScene particleSystem={particleSystem} />
+      <TunnelIn>
+        <div className="absolute top-1/2 -translate-y-1/2 left-4 w-full max-h-[calc(100vh-2rem)]  max-w-2xs mx-auto">
+          <Card className="">
+            <CardHeader>
+              <CardTitle>Hello</CardTitle>
+              <CardDescription>This is a card description</CardDescription>
+            </CardHeader>
+            <CardContent>Helo</CardContent>
+            <CardFooter>{/* <Button>Click me</Button> */}</CardFooter>
+          </Card>
+        </div>
+      </TunnelIn>
     </>
   );
 }
@@ -280,7 +343,7 @@ export default function Page() {
       <ambientLight intensity={0.4} />
       <pointLight position={[6, 6, 6]} intensity={0.9} />
       <pointLight position={[-4, -5, -6]} intensity={0.3} />
-      <PointsScene />
+      <Scene />
     </Canvas>
   );
 }

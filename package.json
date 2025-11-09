@@ -21,7 +21,8 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "tailwind-merge": "^3.3.1",
-    "three": "^0.181.0"
+    "three": "^0.181.0",
+    "tunnel-rat": "^0.1.2"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
