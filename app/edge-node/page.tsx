@@ -170,6 +170,15 @@ function Scene() {
         canvas.removeEventListener("click", handleClick);
       };
     }
+
+    if (chapter === 6) {
+      setCaption("Edges can have a weight.");
+
+      const cancel = delay(async () => {
+        setChapter(chapter + 1);
+      }, 2);
+    }
+
     return () => {};
   }, [chapter]);
 

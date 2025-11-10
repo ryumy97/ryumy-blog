@@ -1,3 +1,4 @@
+import { lerp } from "@/lib/math";
 import { animate, spring } from "motion";
 import * as THREE from "three";
 
@@ -95,6 +96,8 @@ class Edge {
   public from: Node;
   public to: Node;
   public createdAt: number;
+  public index: number = 0;
+  public percent: number = 0;
 
   constructor(from: Node, to: Node, createdAt: number) {
     this.from = from;
@@ -150,8 +153,8 @@ export class ParticleSystem {
 
     this.updateAttributes();
 
-    const updateNodeAttributesBinded = (node: Node) => {
-      this.updateNodeAttributes(node);
+    const updateNodeAttributesBinded = () => {
+      this.updateNodeAttributes(newNode);
     };
 
     animate(0, 1, {
@@ -161,7 +164,7 @@ export class ParticleSystem {
       onUpdate(latest) {
         newNode.size = latest;
 
-        updateNodeAttributesBinded(newNode);
+        updateNodeAttributesBinded();
       },
     });
   }
@@ -182,12 +185,14 @@ export class ParticleSystem {
 
     const newNode = new Node(to.id, to.position, to.time, to.color);
     this.nodes.push(newNode);
-    this.edges.push(new Edge(from, newNode, to.time));
+
+    const edge = new Edge(from, newNode, to.time);
+    this.edges.push(edge);
 
     this.updateAttributes();
 
-    const updateNodeAttributesBinded = (node: Node) => {
-      this.updateNodeAttributes(node);
+    const updateNodeAttributesBinded = () => {
+      this.updateNodeAttributes(newNode);
     };
 
     animate(0, 1, {
@@ -197,7 +202,22 @@ export class ParticleSystem {
       onUpdate(latest) {
         newNode.size = latest;
 
-        updateNodeAttributesBinded(newNode);
+        updateNodeAttributesBinded();
+      },
+    });
+
+    const updateEdgeAttributesBinded = () => {
+      this.updateEdgeAttributes(edge);
+    };
+
+    animate(0, 1, {
+      type: spring,
+      stiffness: 400,
+      damping: 50,
+      onUpdate(latest) {
+        edge.percent = latest;
+
+        updateEdgeAttributesBinded();
       },
     });
   }
@@ -218,6 +238,21 @@ export class ParticleSystem {
     this.edges.push(newEdge);
 
     this.updateAttributes();
+
+    const updateEdgeAttributesBinded = () => {
+      this.updateEdgeAttributes(newEdge);
+    };
+
+    animate(0, 1, {
+      type: spring,
+      stiffness: 400,
+      damping: 50,
+      onUpdate(latest) {
+        newEdge.percent = latest;
+
+        updateEdgeAttributesBinded();
+      },
+    });
   }
 
   public removeNode(id: string) {
@@ -312,9 +347,11 @@ export class ParticleSystem {
       this.linePositionArray[baseIndex] = from[0];
       this.linePositionArray[baseIndex + 1] = from[1];
       this.linePositionArray[baseIndex + 2] = from[2];
-      this.linePositionArray[baseIndex + 3] = to[0];
-      this.linePositionArray[baseIndex + 4] = to[1];
-      this.linePositionArray[baseIndex + 5] = to[2];
+      this.linePositionArray[baseIndex + 3] = lerp(from[0], to[0], 0);
+      this.linePositionArray[baseIndex + 4] = lerp(from[1], to[1], 0);
+      this.linePositionArray[baseIndex + 5] = lerp(from[2], to[2], 0);
+
+      edge.index = i;
     });
 
     this.colorAttribute = new THREE.BufferAttribute(this.colorArray, 3);
@@ -340,28 +377,22 @@ export class ParticleSystem {
 
     this.sizeArray[node.index] = node.size;
 
-    this.updateEdgeAttributesForNode(node);
-
     this.needsUpdate = true;
     this.labelsNeedSync = true;
   }
 
-  private updateEdgeAttributesForNode(node: Node) {
-    this.edges.forEach((edge, i) => {
-      if (edge.from !== node && edge.to !== node) {
-        return;
-      }
+  private updateEdgeAttributes(edge: Edge) {
+    const from = edge.from.position;
+    const to = edge.to.position;
+    const percent = edge.percent;
 
-      const baseIndex = i * 6;
-      const from = edge.from.position;
-      const to = edge.to.position;
+    this.linePositionArray[edge.index * 6] = from[0];
+    this.linePositionArray[edge.index * 6 + 1] = from[1];
+    this.linePositionArray[edge.index * 6 + 2] = from[2];
+    this.linePositionArray[edge.index * 6 + 3] = lerp(from[0], to[0], percent);
+    this.linePositionArray[edge.index * 6 + 4] = lerp(from[1], to[1], percent);
+    this.linePositionArray[edge.index * 6 + 5] = lerp(from[2], to[2], percent);
 
-      this.linePositionArray[baseIndex] = from[0];
-      this.linePositionArray[baseIndex + 1] = from[1];
-      this.linePositionArray[baseIndex + 2] = from[2];
-      this.linePositionArray[baseIndex + 3] = to[0];
-      this.linePositionArray[baseIndex + 4] = to[1];
-      this.linePositionArray[baseIndex + 5] = to[2];
-    });
+    this.needsUpdate = true;
   }
 }
