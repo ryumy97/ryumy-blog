@@ -5,6 +5,8 @@ const colors = {
   light: "#fdfdfd",
   dark: "#2e323f",
   info: "#5aa7ff",
+  visited: "#7a7f8d",
+  pruned: "#f87171",
 };
 
 export default colors;

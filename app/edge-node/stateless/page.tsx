@@ -56,7 +56,8 @@ function Scene() {
     };
 
     const runBfsVisualization = async (startId: string, targetId: string) => {
-      const visited = new Set<string>([startId]);
+      const seen = new Set<string>([startId]);
+      const processed = new Set<string>();
       const queue: string[][] = [[startId]];
 
       particleSystem.resetEdgeColors(colors.light);
@@ -64,8 +65,13 @@ function Scene() {
 
       while (queue.length > 0 && !cancelledRef.current) {
         const path = queue.shift()!;
+        const currentNodeId = path[path.length - 1];
 
-        particleSystem.resetEdgeColors(colors.light);
+        processed.add(currentNodeId);
+        if (currentNodeId !== startId && currentNodeId !== targetId) {
+          particleSystem.colorNode(currentNodeId, colors.visited);
+        }
+
         highlightPath(path, colors.primary);
         safeSetCaption(`Current path: ${path.join(" -> ")}`);
         await wait(500);
@@ -73,38 +79,76 @@ function Scene() {
           return;
         }
 
-        const lastNodeId = path[path.length - 1];
-        if (lastNodeId === targetId) {
+        if (currentNodeId === targetId) {
           highlightPath(path, colors.secondary);
+          path.forEach((nodeId) => {
+            particleSystem.colorNode(
+              nodeId,
+              nodeId === startId ? colors.primary : colors.secondary
+            );
+          });
           safeSetCaption(`Found target path: ${path.join(" -> ")}`);
           return;
         }
 
-        const neighbors = particleSystem.getNeighbors(lastNodeId);
+        highlightPath(path, colors.visited);
+
+        const neighbors = particleSystem.getNeighbors(currentNodeId);
 
         for (const neighbor of neighbors) {
-          if (visited.has(neighbor.id)) {
+          if (cancelledRef.current) {
+            return;
+          }
+
+          if (processed.has(neighbor.id)) {
+            highlightEdge(currentNodeId, neighbor.id, colors.pruned);
+            safeSetCaption(
+              `Already visited ${neighbor.id}, skipping this branch`
+            );
+            await wait(500);
+            if (cancelledRef.current) {
+              return;
+            }
+            highlightEdge(currentNodeId, neighbor.id, colors.visited);
+            continue;
+          }
+
+          if (seen.has(neighbor.id)) {
+            highlightEdge(currentNodeId, neighbor.id, colors.info);
+            safeSetCaption(
+              `Node ${neighbor.id} is already in the frontier queue`
+            );
+            await wait(500);
+            if (cancelledRef.current) {
+              return;
+            }
             continue;
           }
 
           const nextPath = [...path, neighbor.id];
 
           highlightPath(path, colors.primary);
-          highlightEdge(lastNodeId, neighbor.id, colors.info);
-          safeSetCaption(`Checking next path: ${nextPath.join(" -> ")}`);
+          highlightEdge(currentNodeId, neighbor.id, colors.info);
 
+          if (neighbor.id !== targetId) {
+            particleSystem.colorNode(neighbor.id, colors.info);
+          } else {
+            particleSystem.colorNode(neighbor.id, colors.secondary);
+          }
+
+          safeSetCaption(`Checking next path: ${nextPath.join(" -> ")}`);
           await wait(500);
           if (cancelledRef.current) {
             return;
           }
 
-          highlightEdge(lastNodeId, neighbor.id, colors.light);
+          highlightPath(path, colors.visited);
 
           queue.push(nextPath);
-          visited.add(neighbor.id);
+          seen.add(neighbor.id);
         }
 
-        highlightPath(path, colors.light);
+        highlightPath(path, colors.visited);
       }
 
       if (!cancelledRef.current) {
