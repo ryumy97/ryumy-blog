@@ -50,7 +50,7 @@ function createLabelSprite(id: string, color: string): LabelSprite {
 
   const sprite = new THREE.Sprite(material) as LabelSprite;
   sprite.scale.set(0.4, 0.2, 1);
-  sprite.center.set(0.5, 1);
+  sprite.center.set(0.5, 0.5);
   sprite.visible = true;
   sprite.userData = {
     canvas,
@@ -95,13 +95,15 @@ class Node {
 class Edge {
   public from: Node;
   public to: Node;
+  public weight: number;
   public createdAt: number;
   public index: number = 0;
   public percent: number = 0;
 
-  constructor(from: Node, to: Node, createdAt: number) {
+  constructor(from: Node, to: Node, weight: number, createdAt: number) {
     this.from = from;
     this.to = to;
+    this.weight = weight;
     this.createdAt = createdAt;
   }
 }
@@ -131,15 +133,23 @@ export class ParticleSystem {
     new THREE.BufferAttribute(this.linePositionArray, 3);
 
   public labelSprites: Map<string, LabelSprite> = new Map();
+  public weightSprites: Map<string, LabelSprite> = new Map();
+
+  public weightSpritesOpacity: number = 0;
 
   public needsUpdate: boolean = false;
-  private labelsNeedSync: boolean = false;
+  public labelsNeedSync: boolean = false;
+  public weightsNeedSync: boolean = false;
 
   constructor(nodes: Node[], edges: Edge[]) {
     this.nodes = nodes;
     this.edges = edges;
 
     this.updateAttributes();
+  }
+
+  public getNode(id: string) {
+    return this.nodes.find((n) => n.id === id);
   }
 
   public addNode(
@@ -175,6 +185,7 @@ export class ParticleSystem {
       id: string;
       position: [number, number, number];
       color: string;
+      weight: number;
       time: number;
     }
   ) {
@@ -186,7 +197,7 @@ export class ParticleSystem {
     const newNode = new Node(to.id, to.position, to.time, to.color);
     this.nodes.push(newNode);
 
-    const edge = new Edge(from, newNode, to.time);
+    const edge = new Edge(from, newNode, to.weight, to.time);
     this.edges.push(edge);
 
     this.updateAttributes();
@@ -222,7 +233,12 @@ export class ParticleSystem {
     });
   }
 
-  public connectNodes(fromId: string, toId: string, time: number) {
+  public connectNodes(
+    fromId: string,
+    toId: string,
+    weight: number,
+    time: number
+  ) {
     const from = this.nodes.find((n) => n.id === fromId);
     if (!from) {
       throw new Error(`From node with id ${fromId} not found`);
@@ -234,7 +250,7 @@ export class ParticleSystem {
       throw new Error(`To node with id ${toId} not found`);
     }
 
-    const newEdge = new Edge(from, to, time);
+    const newEdge = new Edge(from, to, weight, time);
     this.edges.push(newEdge);
 
     this.updateAttributes();
@@ -303,7 +319,7 @@ export class ParticleSystem {
 
       sprite.position.set(
         node.position[0],
-        node.position[1] + 0.3,
+        node.position[1] + 0.15,
         node.position[2]
       );
     });
@@ -314,8 +330,73 @@ export class ParticleSystem {
         this.labelSprites.delete(id);
       }
     });
+  }
 
-    this.labelsNeedSync = false;
+  public syncWeightSprites() {
+    if (!this.weightsNeedSync) {
+      return;
+    }
+
+    this.edges.forEach((edge) => {
+      let sprite = this.weightSprites.get(edge.from.id + "-" + edge.to.id);
+      if (!sprite) {
+        sprite = createLabelSprite(edge.weight.toFixed(1), "#878d97");
+        this.weightSprites.set(edge.from.id + "-" + edge.to.id, sprite);
+      }
+
+      const material = sprite.material as THREE.SpriteMaterial;
+      material.opacity = this.weightSpritesOpacity;
+      material.transparent = true;
+      material.depthWrite = false;
+      material.needsUpdate = true;
+
+      sprite.visible = this.weightSpritesOpacity > 0;
+
+      sprite.position.set(
+        lerp(edge.from.position[0], edge.to.position[0], 0.5),
+        lerp(edge.from.position[1], edge.to.position[1], 0.5),
+        lerp(edge.from.position[2], edge.to.position[2], 0.5)
+      );
+    });
+
+    this.weightSprites.forEach((sprite, id) => {
+      if (!this.edges.some((edge) => edge.from.id + "-" + edge.to.id === id)) {
+        sprite.visible = false;
+        this.weightSprites.delete(id);
+      }
+    });
+  }
+
+  public showWeightSprites() {
+    const binded = (latest: number) => {
+      this.weightSpritesOpacity = latest;
+      this.weightsNeedSync = true;
+    };
+
+    animate(0, 1, {
+      type: spring,
+      stiffness: 400,
+      damping: 20,
+      onUpdate(latest) {
+        binded(latest);
+      },
+    });
+  }
+
+  public hideWeightSprites() {
+    const binded = (latest: number) => {
+      this.weightSpritesOpacity = latest;
+      this.weightsNeedSync = true;
+    };
+
+    animate(1, 0, {
+      type: spring,
+      stiffness: 400,
+      damping: 20,
+      onUpdate(latest) {
+        binded(latest);
+      },
+    });
   }
 
   private updateAttributes() {
@@ -364,6 +445,7 @@ export class ParticleSystem {
 
     this.needsUpdate = true;
     this.labelsNeedSync = true;
+    this.weightsNeedSync = true;
   }
 
   private updateNodeAttributes(node: Node) {
@@ -379,6 +461,7 @@ export class ParticleSystem {
 
     this.needsUpdate = true;
     this.labelsNeedSync = true;
+    this.weightsNeedSync = true;
   }
 
   private updateEdgeAttributes(edge: Edge) {

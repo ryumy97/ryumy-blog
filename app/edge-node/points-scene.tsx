@@ -43,6 +43,7 @@ export function PointsScene({
   const linesGeometryRef = useRef<THREE.BufferGeometry>(null);
   const pointsShaderRef = useRef<THREE.ShaderMaterial | null>(null);
   const labelsGroupRef = useRef<THREE.Group>(null);
+  const weightsGroupRef = useRef<THREE.Group>(null);
 
   const { gl } = useThree();
 
@@ -106,19 +107,32 @@ export function PointsScene({
         }
       }
 
-      if (labelsGroupRef.current) {
-        particleSystem.syncLabelSprites();
-
-        labelsGroupRef.current.clear();
-        particleSystem.labelSprites.forEach((sprite, id) => {
-          labelsGroupRef.current?.add(sprite);
-        });
-      }
-
       particleSystem.needsUpdate = false;
     }
 
     pointsMaterial.needsUpdate = true;
+
+    if (particleSystem.labelsNeedSync) {
+      particleSystem.syncLabelSprites();
+
+      labelsGroupRef.current?.clear();
+      particleSystem.labelSprites.forEach((sprite, id) => {
+        labelsGroupRef.current?.add(sprite);
+      });
+
+      particleSystem.labelsNeedSync = false;
+    }
+
+    if (particleSystem.weightsNeedSync) {
+      particleSystem.syncWeightSprites();
+
+      weightsGroupRef.current?.clear();
+      particleSystem.weightSprites.forEach((sprite, id) => {
+        weightsGroupRef.current?.add(sprite);
+      });
+
+      particleSystem.weightsNeedSync = false;
+    }
   });
 
   return (
@@ -132,6 +146,7 @@ export function PointsScene({
         <lineBasicMaterial color="#878d97" linewidth={1} />
       </lineSegments>
       <group ref={labelsGroupRef} />
+      <group ref={weightsGroupRef} />
     </>
   );
 }

@@ -32,6 +32,24 @@ function Scene() {
   const runChapter = useCallback((): (() => void) => {
     const canvas = gl.domElement;
 
+    const animateCameraToNode = async (nodeId: string) => {
+      const node = particleSystem.getNode(nodeId);
+      if (!node) {
+        throw new Error(`Node with id ${nodeId} not found`);
+      }
+
+      animateCamera(
+        camera,
+        dataRef.current.position,
+        dataRef.current.target,
+        dataRef.current.position,
+        node.position
+      );
+
+      dataRef.current.position = dataRef.current.position;
+      dataRef.current.target = node.position;
+    };
+
     if (chapter === 0) {
       setCaption("Let's learn about node-edge graphs.");
 
@@ -52,14 +70,9 @@ function Scene() {
     }
 
     if (chapter === 1) {
-      particleSystem.addNode("A", [0, 0, 0], "#3dd98b", clock.elapsedTime);
-      animateCamera(
-        camera,
-        dataRef.current.position,
-        dataRef.current.target,
-        dataRef.current.position,
-        [0, 0, 0]
-      );
+      particleSystem.addNode("A", [-2, 0, 0], "#3dd98b", clock.elapsedTime);
+
+      animateCameraToNode("A");
 
       setCaption("This is a node (also called a vertex).");
 
@@ -103,11 +116,13 @@ function Scene() {
         "The system can have multiple data points. Like the ones here."
       );
 
-      particleSystem.addNode("B", [1, 0, 0], "#3dd98b", clock.elapsedTime);
-      particleSystem.addNode("C", [-1, 0, 0], "#ff5555", clock.elapsedTime);
-      particleSystem.addNode("D", [1, 1, 1], "#ff5555", clock.elapsedTime);
-      particleSystem.addNode("E", [1, 2, -1], "#ff5555", clock.elapsedTime);
-      particleSystem.addNode("F", [-1, -1, 0], "#ff5555", clock.elapsedTime);
+      particleSystem.addNode("B", [-1, 1, 0], "#3dd98b", clock.elapsedTime);
+      particleSystem.addNode("C", [1, 1, 0], "#3dd98b", clock.elapsedTime);
+      particleSystem.addNode("D", [2, 0, 0], "#3dd98b", clock.elapsedTime);
+      particleSystem.addNode("E", [0, -1, 0], "#3dd98b", clock.elapsedTime);
+      particleSystem.addNode("F", [-1, -2, 0], "#3dd98b", clock.elapsedTime);
+
+      animateCameraToNode("E");
 
       const cancel = delay(async () => {
         setChapter(chapter + 1);
@@ -128,13 +143,12 @@ function Scene() {
     if (chapter === 4) {
       setCaption("Edges connect nodes to each other.");
 
-      particleSystem.connectNodes("A", "B", clock.elapsedTime);
-      particleSystem.connectNodes("A", "D", clock.elapsedTime);
-      particleSystem.connectNodes("A", "C", clock.elapsedTime);
-      particleSystem.connectNodes("B", "D", clock.elapsedTime);
-      particleSystem.connectNodes("B", "E", clock.elapsedTime);
-      particleSystem.connectNodes("C", "F", clock.elapsedTime);
-      particleSystem.connectNodes("E", "F", clock.elapsedTime);
+      particleSystem.connectNodes("A", "B", 14.1, clock.elapsedTime);
+      particleSystem.connectNodes("B", "C", 20.0, clock.elapsedTime);
+      particleSystem.connectNodes("C", "D", 14.1, clock.elapsedTime);
+      particleSystem.connectNodes("B", "E", 25.0, clock.elapsedTime);
+      particleSystem.connectNodes("E", "F", 11.2, clock.elapsedTime);
+      particleSystem.connectNodes("F", "A", 28.3, clock.elapsedTime);
 
       const cancel = delay(async () => {
         setChapter(chapter + 1);
@@ -174,12 +188,48 @@ function Scene() {
     if (chapter === 6) {
       setCaption("Edges can have a weight.");
 
+      particleSystem.showWeightSprites();
+
       const cancel = delay(async () => {
         setChapter(chapter + 1);
       }, 2);
+
+      const handleClick = () => {
+        setChapter(chapter + 1);
+      };
+
+      canvas.addEventListener("click", handleClick);
+
+      return () => {
+        cancel();
+        canvas.removeEventListener("click", handleClick);
+      };
     }
 
-    return () => {};
+    if (chapter === 7) {
+      setCaption(
+        "The weight represents the strength of the relationship between two nodes."
+      );
+
+      const cancel = delay(async () => {
+        setChapter(chapter + 1);
+      }, 2);
+
+      const handleClick = () => {
+        setChapter(chapter + 1);
+      };
+
+      canvas.addEventListener("click", handleClick);
+
+      return () => {
+        cancel();
+        canvas.removeEventListener("click", handleClick);
+      };
+    }
+
+    return () => {
+      particleSystem.clear();
+    };
   }, [chapter]);
 
   useEffect(() => {

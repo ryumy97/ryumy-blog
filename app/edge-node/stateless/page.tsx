@@ -5,11 +5,11 @@ import { TunnelIn } from "@/components/tunnel";
 import { Caption } from "@/components/ui/caption";
 import { animateCamera } from "@/lib/camera";
 import { Canvas, useThree } from "@react-three/fiber";
-import { delay } from "motion";
 import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ParticleSystem } from "../particle-system";
 import { PointsScene } from "../points-scene";
+import { delay } from "motion";
 
 function Scene() {
   const particleSystem = useMemo(() => new ParticleSystem([], []), []);
@@ -35,20 +35,23 @@ function Scene() {
       [0, 0, 0]
     );
 
-    particleSystem.addNode("A", [0, 0, 0], "#3dd98b", clock.elapsedTime);
-    particleSystem.addNode("B", [1, 0, 0], "#3dd98b", clock.elapsedTime);
-    particleSystem.addNode("C", [-1, 0, 0], "#ff5555", clock.elapsedTime);
-    particleSystem.addNode("D", [1, 1, 1], "#ff5555", clock.elapsedTime);
-    particleSystem.addNode("E", [1, 2, -1], "#ff5555", clock.elapsedTime);
-    particleSystem.addNode("F", [-1, -1, 0], "#ff5555", clock.elapsedTime);
+    particleSystem.addNode("A", [-2, 0, 0], "#3dd98b", clock.elapsedTime);
+    particleSystem.addNode("B", [-1, 1, 0], "#3dd98b", clock.elapsedTime);
+    particleSystem.addNode("C", [1, 1, 0], "#3dd98b", clock.elapsedTime);
+    particleSystem.addNode("D", [2, 0, 0], "#3dd98b", clock.elapsedTime);
+    particleSystem.addNode("E", [0, -1, 0], "#3dd98b", clock.elapsedTime);
+    particleSystem.addNode("F", [-1, -2, 0], "#3dd98b", clock.elapsedTime);
 
-    particleSystem.connectNodes("A", "B", clock.elapsedTime);
-    particleSystem.connectNodes("A", "D", clock.elapsedTime);
-    particleSystem.connectNodes("A", "C", clock.elapsedTime);
-    particleSystem.connectNodes("B", "D", clock.elapsedTime);
-    particleSystem.connectNodes("B", "E", clock.elapsedTime);
-    particleSystem.connectNodes("C", "F", clock.elapsedTime);
-    particleSystem.connectNodes("E", "F", clock.elapsedTime);
+    particleSystem.connectNodes("A", "B", 14.1, clock.elapsedTime);
+    particleSystem.connectNodes("B", "C", 20.0, clock.elapsedTime);
+    particleSystem.connectNodes("C", "D", 14.1, clock.elapsedTime);
+    particleSystem.connectNodes("B", "E", 25.0, clock.elapsedTime);
+    particleSystem.connectNodes("E", "F", 11.2, clock.elapsedTime);
+    particleSystem.connectNodes("F", "A", 28.3, clock.elapsedTime);
+
+    delay(async () => {
+      particleSystem.showWeightSprites();
+    }, 1);
 
     return () => {
       particleSystem.clear();
