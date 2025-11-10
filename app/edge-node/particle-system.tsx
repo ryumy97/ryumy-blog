@@ -1,3 +1,4 @@
+import colors from "@/lib/colors";
 import { lerp } from "@/lib/math";
 import { animate, cubicBezier, spring } from "motion";
 import * as THREE from "three";
@@ -97,14 +98,22 @@ class Edge {
   public to: Node;
   public weight: number;
   public createdAt: number;
+  public color: string;
   public index: number = 0;
   public percent: number = 0;
 
-  constructor(from: Node, to: Node, weight: number, createdAt: number) {
+  constructor(
+    from: Node,
+    to: Node,
+    weight: number,
+    createdAt: number,
+    color: string
+  ) {
     this.from = from;
     this.to = to;
     this.weight = weight;
     this.createdAt = createdAt;
+    this.color = color;
   }
 }
 
@@ -116,6 +125,7 @@ export class ParticleSystem {
   public sizeArray: Float32Array = new Float32Array(0);
   public positionArray: Float32Array = new Float32Array(0);
   public linePositionArray: Float32Array = new Float32Array(0);
+  public lineColorArray: Float32Array = new Float32Array(0);
 
   public colorAttribute: THREE.BufferAttribute = new THREE.BufferAttribute(
     this.colorArray,
@@ -131,6 +141,10 @@ export class ParticleSystem {
   );
   public linePositionAttribute: THREE.BufferAttribute =
     new THREE.BufferAttribute(this.linePositionArray, 3);
+  public lineColorAttribute: THREE.BufferAttribute = new THREE.BufferAttribute(
+    this.lineColorArray,
+    3
+  );
 
   public labelSprites: Map<string, LabelSprite> = new Map();
   public weightSprites: Map<string, LabelSprite> = new Map();
@@ -199,6 +213,19 @@ export class ParticleSystem {
     });
   }
 
+  public colorEdge(fromId: string, toId: string, color: string) {
+    const edge = this.edges.find(
+      (e) => e.from.id === fromId && e.to.id === toId
+    );
+    if (!edge) {
+      throw new Error(`Edge from ${fromId} to ${toId} not found`);
+    }
+
+    edge.color = color;
+
+    this.updateEdgeAttributes(edge);
+  }
+
   public addNodeFrom(
     fromId: string,
     to: {
@@ -217,7 +244,7 @@ export class ParticleSystem {
     const newNode = new Node(to.id, to.position, to.time, to.color);
     this.nodes.push(newNode);
 
-    const edge = new Edge(from, newNode, to.weight, to.time);
+    const edge = new Edge(from, newNode, to.weight, to.time, colors.light);
     this.edges.push(edge);
 
     this.updateAttributes();
@@ -270,7 +297,7 @@ export class ParticleSystem {
       throw new Error(`To node with id ${toId} not found`);
     }
 
-    const newEdge = new Edge(from, to, weight, time);
+    const newEdge = new Edge(from, to, weight, time, colors.light);
     this.edges.push(newEdge);
 
     this.updateAttributes();
@@ -321,6 +348,29 @@ export class ParticleSystem {
     this.nodes = [];
     this.edges = [];
     this.updateAttributes();
+  }
+
+  public getNeighbors(nodeId: string) {
+    return this.edges
+      .filter((edge) => edge.from.id === nodeId)
+      .map((edge) => edge.to);
+  }
+
+  public resetEdgeColors(color: string) {
+    this.edges.forEach((edge) => {
+      edge.color = color;
+      this.updateEdgeAttributes(edge);
+    });
+  }
+
+  public colorPath(path: string[], color: string) {
+    if (path.length < 2) {
+      return;
+    }
+
+    for (let i = 0; i < path.length - 1; i++) {
+      this.colorEdge(path[i], path[i + 1], color);
+    }
   }
 
   public syncLabelSprites() {
@@ -424,6 +474,7 @@ export class ParticleSystem {
     this.sizeArray = new Float32Array(this.nodes.length);
     this.positionArray = new Float32Array(this.nodes.length * 3);
     this.linePositionArray = new Float32Array(this.edges.length * 2 * 3);
+    this.lineColorArray = new Float32Array(this.edges.length * 2 * 3);
 
     this.nodes.forEach((node, i) => {
       this.positionArray[i * 3] = node.position[0];
@@ -443,6 +494,7 @@ export class ParticleSystem {
     this.edges.forEach((edge, i) => {
       const from = edge.from.position;
       const to = edge.to.position;
+
       const baseIndex = i * 6;
 
       this.linePositionArray[baseIndex] = from[0];
@@ -451,6 +503,15 @@ export class ParticleSystem {
       this.linePositionArray[baseIndex + 3] = lerp(from[0], to[0], 0);
       this.linePositionArray[baseIndex + 4] = lerp(from[1], to[1], 0);
       this.linePositionArray[baseIndex + 5] = lerp(from[2], to[2], 0);
+
+      const color = new THREE.Color(edge.color);
+      const colorIndex = i * 6;
+      this.lineColorArray[colorIndex] = color.r;
+      this.lineColorArray[colorIndex + 1] = color.g;
+      this.lineColorArray[colorIndex + 2] = color.b;
+      this.lineColorArray[colorIndex + 3] = color.r;
+      this.lineColorArray[colorIndex + 4] = color.g;
+      this.lineColorArray[colorIndex + 5] = color.b;
 
       edge.index = i;
     });
@@ -462,6 +523,7 @@ export class ParticleSystem {
       this.linePositionArray,
       3
     );
+    this.lineColorAttribute = new THREE.BufferAttribute(this.lineColorArray, 3);
 
     this.needsUpdate = true;
     this.labelsNeedSync = true;
@@ -473,9 +535,10 @@ export class ParticleSystem {
     this.positionArray[node.index * 3 + 1] = node.position[1];
     this.positionArray[node.index * 3 + 2] = node.position[2];
 
-    this.colorArray[node.index * 3] = new THREE.Color(node.color).r;
-    this.colorArray[node.index * 3 + 1] = new THREE.Color(node.color).g;
-    this.colorArray[node.index * 3 + 2] = new THREE.Color(node.color).b;
+    const color = new THREE.Color(node.color);
+    this.colorArray[node.index * 3] = color.r;
+    this.colorArray[node.index * 3 + 1] = color.g;
+    this.colorArray[node.index * 3 + 2] = color.b;
 
     this.sizeArray[node.index] = node.size;
 
@@ -495,6 +558,15 @@ export class ParticleSystem {
     this.linePositionArray[edge.index * 6 + 3] = lerp(from[0], to[0], percent);
     this.linePositionArray[edge.index * 6 + 4] = lerp(from[1], to[1], percent);
     this.linePositionArray[edge.index * 6 + 5] = lerp(from[2], to[2], percent);
+
+    const color = new THREE.Color(edge.color);
+    const colorIndex = edge.index * 6;
+    this.lineColorArray[colorIndex] = color.r;
+    this.lineColorArray[colorIndex + 1] = color.g;
+    this.lineColorArray[colorIndex + 2] = color.b;
+    this.lineColorArray[colorIndex + 3] = color.r;
+    this.lineColorArray[colorIndex + 4] = color.g;
+    this.lineColorArray[colorIndex + 5] = color.b;
 
     this.needsUpdate = true;
   }

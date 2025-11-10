@@ -102,6 +102,7 @@
   --destructive-foreground: #fdfdfd;
   --success: #3dd98b;
   --success-foreground: #fdfdfd;
+  --info: #5aa7ff;
   --border: #a8b4c7;
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);

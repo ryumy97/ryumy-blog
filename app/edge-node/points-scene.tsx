@@ -2,6 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { ParticleSystem } from "./particle-system";
+import { LineSegments2 } from "three/examples/jsm/Addons.js";
 
 const vertexShader = /* glsl */ `
   attribute float size;
@@ -41,6 +42,7 @@ export function PointsScene({
   const pointsRef = useRef<THREE.Points>(null);
   const pointsGeometryRef = useRef<THREE.BufferGeometry>(null);
   const linesGeometryRef = useRef<THREE.BufferGeometry>(null);
+  const linesMaterialRef = useRef<THREE.LineBasicMaterial | null>(null);
   const pointsShaderRef = useRef<THREE.ShaderMaterial | null>(null);
   const labelsGroupRef = useRef<THREE.Group>(null);
   const weightsGroupRef = useRef<THREE.Group>(null);
@@ -101,9 +103,16 @@ export function PointsScene({
           "position",
           particleSystem.linePositionAttribute
         );
+        linesGeometryRef.current.setAttribute(
+          "color",
+          particleSystem.lineColorAttribute
+        );
 
         if (linesGeometryRef.current.attributes.position) {
           linesGeometryRef.current.attributes.position.needsUpdate = true;
+        }
+        if (linesGeometryRef.current.attributes.color) {
+          linesGeometryRef.current.attributes.color.needsUpdate = true;
         }
       }
 
@@ -143,7 +152,7 @@ export function PointsScene({
       </points>
       <lineSegments>
         <bufferGeometry ref={linesGeometryRef} />
-        <lineBasicMaterial color="#878d97" linewidth={1} />
+        <lineBasicMaterial ref={linesMaterialRef} linewidth={1} vertexColors />
       </lineSegments>
       <group ref={labelsGroupRef} />
       <group ref={weightsGroupRef} />

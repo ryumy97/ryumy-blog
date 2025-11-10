@@ -9,13 +9,12 @@ import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ParticleSystem } from "../particle-system";
 import { PointsScene } from "../points-scene";
-import { delay } from "motion";
 import colors from "@/lib/colors";
 
 function Scene() {
   const particleSystem = useMemo(() => new ParticleSystem([], []), []);
 
-  const { clock, camera, gl } = useThree();
+  const { clock, camera } = useThree();
 
   const [caption, setCaption] = useState("");
 
@@ -26,8 +25,93 @@ function Scene() {
     position: [0, 0, 10],
     target: [0, 0, 0],
   });
+  const cancelledRef = useRef(false);
+
+  const safeSetCaption = useCallback((value: string) => {
+    if (!cancelledRef.current) {
+      setCaption(value);
+    }
+  }, []);
 
   const runChapter = useCallback(async (): Promise<() => void> => {
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => {
+        const timeout = setTimeout(() => {
+          clearTimeout(timeout);
+          resolve();
+        }, ms);
+      });
+
+    const waitOrCancelled = async (ms: number) => {
+      await wait(ms);
+      return cancelledRef.current;
+    };
+
+    const highlightPath = (path: string[], color: string) => {
+      particleSystem.colorPath(path, color);
+    };
+
+    const highlightEdge = (fromId: string, toId: string, color: string) => {
+      particleSystem.colorEdge(fromId, toId, color);
+    };
+
+    const runBfsVisualization = async (startId: string, targetId: string) => {
+      const visited = new Set<string>([startId]);
+      const queue: string[][] = [[startId]];
+
+      particleSystem.resetEdgeColors(colors.light);
+      safeSetCaption(`Starting BFS from ${startId} to ${targetId}`);
+
+      while (queue.length > 0 && !cancelledRef.current) {
+        const path = queue.shift()!;
+
+        particleSystem.resetEdgeColors(colors.light);
+        highlightPath(path, colors.primary);
+        safeSetCaption(`Current path: ${path.join(" -> ")}`);
+        await wait(500);
+        if (cancelledRef.current) {
+          return;
+        }
+
+        const lastNodeId = path[path.length - 1];
+        if (lastNodeId === targetId) {
+          highlightPath(path, colors.secondary);
+          safeSetCaption(`Found target path: ${path.join(" -> ")}`);
+          return;
+        }
+
+        const neighbors = particleSystem.getNeighbors(lastNodeId);
+
+        for (const neighbor of neighbors) {
+          if (visited.has(neighbor.id)) {
+            continue;
+          }
+
+          const nextPath = [...path, neighbor.id];
+
+          highlightPath(path, colors.primary);
+          highlightEdge(lastNodeId, neighbor.id, colors.info);
+          safeSetCaption(`Checking next path: ${nextPath.join(" -> ")}`);
+
+          await wait(500);
+          if (cancelledRef.current) {
+            return;
+          }
+
+          highlightEdge(lastNodeId, neighbor.id, colors.light);
+
+          queue.push(nextPath);
+          visited.add(neighbor.id);
+        }
+
+        highlightPath(path, colors.light);
+      }
+
+      if (!cancelledRef.current) {
+        safeSetCaption(`No path found from ${startId} to ${targetId}.`);
+      }
+    };
+
     const animateCameraToNode = async (
       nodeId: string,
       position: [number, number, number] = [0, 0, 10]
@@ -142,41 +226,70 @@ function Scene() {
 
     particleSystem.showWeightSprites();
 
-    delay(async () => {
-      await animateCameraToNode("A", [0, 0, 5]);
-      particleSystem.colorNode("A", colors.primary);
-    }, 1);
+    if (await waitOrCancelled(1000)) {
+      return () => {
+        particleSystem.clear();
+      };
+    }
 
-    delay(async () => {
-      await animateCameraToNode("T", [0, 0, 5]);
-      particleSystem.colorNode("T", colors.secondary);
-    }, 2);
+    await animateCameraToNode("A", [0, 0, 5]);
+    particleSystem.colorNode("A", colors.primary);
 
-    delay(async () => {
-      animateCamera(
-        camera,
-        dataRef.current.position,
-        dataRef.current.target,
-        [0, 0, 10],
-        [0, 0, 0]
-      );
+    if (await waitOrCancelled(1000)) {
+      return () => {
+        particleSystem.clear();
+      };
+    }
 
-      dataRef.current.position = [0, 0, 10];
-      dataRef.current.target = [0, 0, 0];
-    }, 3);
+    await animateCameraToNode("T", [0, 0, 5]);
+    particleSystem.colorNode("T", colors.secondary);
+
+    if (await waitOrCancelled(1000)) {
+      return () => {
+        particleSystem.clear();
+      };
+    }
+
+    animateCamera(
+      camera,
+      dataRef.current.position,
+      dataRef.current.target,
+      [0, 0, 10],
+      [0, 0, 0]
+    );
+
+    dataRef.current.position = [0, 0, 10];
+    dataRef.current.target = [0, 0, 0];
+
+    if (await waitOrCancelled(500)) {
+      return () => {
+        particleSystem.clear();
+      };
+    }
+
+    await runBfsVisualization("A", "T");
 
     return () => {
       particleSystem.clear();
     };
-  }, []);
+  }, [camera, particleSystem, safeSetCaption]);
 
   useEffect(() => {
+    cancelledRef.current = false;
     let cancel: (() => void) | null = null;
+    let active = true;
+
     runChapter().then((c) => {
+      if (!active) {
+        c();
+        return;
+      }
       cancel = c;
     });
 
     return () => {
+      cancelledRef.current = true;
+      active = false;
       cancel?.();
     };
   }, [particleSystem, runChapter]);
