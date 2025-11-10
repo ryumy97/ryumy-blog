@@ -1,5 +1,5 @@
 import { lerp } from "@/lib/math";
-import { animate, spring } from "motion";
+import { animate, cubicBezier, spring } from "motion";
 import * as THREE from "three";
 
 type LabelSprite = THREE.Sprite & {
@@ -174,6 +174,26 @@ export class ParticleSystem {
       onUpdate(latest) {
         newNode.size = latest;
 
+        updateNodeAttributesBinded();
+      },
+    });
+  }
+
+  public colorNode(id: string, color: string) {
+    const node = this.nodes.find((n) => n.id === id);
+    if (!node) {
+      throw new Error(`Node with id ${id} not found`);
+    }
+
+    const updateNodeAttributesBinded = () => {
+      this.updateNodeAttributes(node);
+    };
+
+    animate(node.color, color, {
+      duration: 0.5,
+      ease: cubicBezier(0.3, 0, 0, 1),
+      onUpdate(latest) {
+        node.color = latest;
         updateNodeAttributesBinded();
       },
     });

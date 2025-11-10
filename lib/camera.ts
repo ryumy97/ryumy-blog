@@ -1,4 +1,4 @@
-import { animate, spring } from "motion";
+import { animate, cubicBezier, spring } from "motion";
 import * as THREE from "three";
 
 export const animateCamera = async (
@@ -26,9 +26,8 @@ export const animateCamera = async (
   const targetVector = new THREE.Vector3(target[0], target[1], target[2]);
 
   animate(0, 1, {
-    type: spring,
-    stiffness: 100,
-    damping: 20,
+    duration: 0.5,
+    ease: cubicBezier(0.3, 0, 0, 1),
     onUpdate(latest) {
       const currentPosition = originPositionVector
         .clone()

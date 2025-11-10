@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { ParticleSystem } from "./particle-system";
 import { PointsScene } from "./points-scene";
+import colors from "@/lib/colors";
 
 function Scene() {
   const particleSystem = useMemo(() => new ParticleSystem([], []), []);
@@ -29,24 +30,27 @@ function Scene() {
     target: [0, 0, 0],
   });
 
-  const runChapter = useCallback((): (() => void) => {
+  const runChapter = useCallback(async (): Promise<() => void> => {
     const canvas = gl.domElement;
 
-    const animateCameraToNode = async (nodeId: string) => {
+    const animateCameraToNode = async (
+      nodeId: string,
+      position: [number, number, number] = [0, 0, 10]
+    ) => {
       const node = particleSystem.getNode(nodeId);
       if (!node) {
         throw new Error(`Node with id ${nodeId} not found`);
       }
 
-      animateCamera(
+      await animateCamera(
         camera,
         dataRef.current.position,
         dataRef.current.target,
-        dataRef.current.position,
+        position,
         node.position
       );
 
-      dataRef.current.position = dataRef.current.position;
+      dataRef.current.position = position;
       dataRef.current.target = node.position;
     };
 
@@ -70,7 +74,12 @@ function Scene() {
     }
 
     if (chapter === 1) {
-      particleSystem.addNode("A", [-2, 0, 0], "#3dd98b", clock.elapsedTime);
+      particleSystem.addNode(
+        "A",
+        [-2, 0, 0],
+        colors.success,
+        clock.elapsedTime
+      );
 
       animateCameraToNode("A");
 
@@ -116,11 +125,26 @@ function Scene() {
         "The system can have multiple data points. Like the ones here."
       );
 
-      particleSystem.addNode("B", [-1, 1, 0], "#3dd98b", clock.elapsedTime);
-      particleSystem.addNode("C", [1, 1, 0], "#3dd98b", clock.elapsedTime);
-      particleSystem.addNode("D", [2, 0, 0], "#3dd98b", clock.elapsedTime);
-      particleSystem.addNode("E", [0, -1, 0], "#3dd98b", clock.elapsedTime);
-      particleSystem.addNode("F", [-1, -2, 0], "#3dd98b", clock.elapsedTime);
+      particleSystem.addNode(
+        "B",
+        [-1, 1, 0],
+        colors.success,
+        clock.elapsedTime
+      );
+      particleSystem.addNode("C", [1, 1, 0], colors.success, clock.elapsedTime);
+      particleSystem.addNode("D", [2, 0, 0], colors.success, clock.elapsedTime);
+      particleSystem.addNode(
+        "E",
+        [0, -1, 0],
+        colors.success,
+        clock.elapsedTime
+      );
+      particleSystem.addNode(
+        "F",
+        [-1, -2, 0],
+        colors.success,
+        clock.elapsedTime
+      );
 
       animateCameraToNode("E");
 
@@ -227,16 +251,103 @@ function Scene() {
       };
     }
 
-    return () => {
-      particleSystem.clear();
-    };
+    if (chapter === 8) {
+      setCaption("Let's try to find the shortest path between two nodes.");
+
+      const cancel = delay(async () => {
+        setChapter(chapter + 1);
+      }, 2);
+
+      const handleClick = () => {
+        setChapter(chapter + 1);
+      };
+
+      canvas.addEventListener("click", handleClick);
+
+      return () => {
+        cancel();
+        canvas.removeEventListener("click", handleClick);
+      };
+    }
+
+    if (chapter === 9) {
+      setCaption("Starting from node D...");
+
+      animateCameraToNode("D", [0, 0, 5]);
+
+      particleSystem.colorNode("D", colors.primary);
+
+      const cancel = delay(async () => {
+        setChapter(chapter + 1);
+      }, 2);
+
+      const handleClick = () => {
+        setChapter(chapter + 1);
+      };
+
+      canvas.addEventListener("click", handleClick);
+
+      return () => {
+        cancel();
+        canvas.removeEventListener("click", handleClick);
+      };
+    }
+
+    if (chapter === 10) {
+      setCaption("to node F.");
+
+      animateCameraToNode("F", [0, 0, 5]);
+
+      particleSystem.colorNode("F", colors.secondary);
+
+      const cancel = delay(async () => {
+        setChapter(chapter + 1);
+      }, 2);
+
+      const handleClick = () => {
+        setChapter(chapter + 1);
+      };
+
+      canvas.addEventListener("click", handleClick);
+
+      return () => {
+        cancel();
+        canvas.removeEventListener("click", handleClick);
+      };
+    }
+
+    if (chapter === 11) {
+      setCaption("The shortest path is the path with the lowest total weight.");
+
+      animateCameraToNode("E", [0, 0, 10]);
+
+      const cancel = delay(async () => {
+        setChapter(chapter + 1);
+      }, 2);
+
+      const handleClick = () => {
+        setChapter(chapter + 1);
+      };
+
+      canvas.addEventListener("click", handleClick);
+
+      return () => {
+        cancel();
+        canvas.removeEventListener("click", handleClick);
+      };
+    }
+
+    return () => {};
   }, [chapter]);
 
   useEffect(() => {
-    const cancel = runChapter();
+    let cancel: (() => void) | null = null;
+    runChapter().then((c) => {
+      cancel = c;
+    });
 
     return () => {
-      cancel();
+      cancel?.();
     };
   }, [particleSystem, runChapter]);
 
