@@ -386,6 +386,21 @@ export class ParticleSystem {
     }
   }
 
+  public getEdge(fromId: string, toId: string) {
+    return this.edges.find(
+      (edge) => edge.from.id === fromId && edge.to.id === toId
+    );
+  }
+
+  public getEdgeWeight(fromId: string, toId: string) {
+    const edge = this.getEdge(fromId, toId);
+    if (!edge) {
+      return Infinity;
+    }
+
+    return edge.weight;
+  }
+
   public syncLabelSprites() {
     if (!this.labelsNeedSync) {
       return;

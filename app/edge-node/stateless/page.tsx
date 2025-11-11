@@ -262,6 +262,174 @@ function Scene() {
       }
     };
 
+    const runAStarVisualization = async (startId: string, targetId: string) => {
+      particleSystem.resetNodeColors(colors.success);
+      particleSystem.resetEdgeColors(colors.light);
+      particleSystem.colorNode(startId, colors.primary);
+      particleSystem.colorNode(targetId, colors.secondary);
+
+      const openSet = new Set<string>([startId]);
+      const openList: string[] = [startId];
+      const closedSet = new Set<string>();
+      const cameFrom = new Map<string, string>();
+      const gScore = new Map<string, number>();
+      const fScore = new Map<string, number>();
+
+      const targetNode = particleSystem.getNode(targetId);
+      if (!targetNode) {
+        safeSetCaption(`Target node ${targetId} not found`);
+        return;
+      }
+
+      const heuristic = (nodeId: string) => {
+        const node = particleSystem.getNode(nodeId);
+        if (!node) return 0;
+        const dx = node.position[0] - targetNode.position[0];
+        const dy = node.position[1] - targetNode.position[1];
+        const dz = node.position[2] - targetNode.position[2];
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
+      };
+
+      const reconstructPath = (nodeId: string) => {
+        const path = [nodeId];
+        let current = nodeId;
+        while (cameFrom.has(current)) {
+          current = cameFrom.get(current)!;
+          path.unshift(current);
+        }
+        return path;
+      };
+
+      const updateOpenColors = () => {
+        openList.forEach((nodeId) => {
+          if (nodeId !== startId && nodeId !== targetId) {
+            particleSystem.colorNode(nodeId, colors.info);
+          }
+        });
+      };
+
+      gScore.set(startId, 0);
+      fScore.set(startId, heuristic(startId));
+
+      safeSetCaption(`Starting A* from ${startId} to ${targetId}`);
+
+      while (openList.length > 0 && !cancelledRef.current) {
+        updateOpenColors();
+
+        let currentId = openList[0];
+        let currentIndex = 0;
+        for (let i = 1; i < openList.length; i++) {
+          const nodeId = openList[i];
+          if (
+            (fScore.get(nodeId) ?? Infinity) <
+            (fScore.get(currentId) ?? Infinity)
+          ) {
+            currentId = nodeId;
+            currentIndex = i;
+          }
+        }
+
+        openList.splice(currentIndex, 1);
+        openSet.delete(currentId);
+
+        if (currentId !== startId && currentId !== targetId) {
+          particleSystem.colorNode(currentId, colors.primary);
+        }
+
+        safeSetCaption(
+          `A* exploring ${currentId} (f=${(
+            fScore.get(currentId) ?? Infinity
+          ).toFixed(2)})`
+        );
+        await wait(500);
+        if (cancelledRef.current) {
+          return;
+        }
+
+        if (currentId === targetId) {
+          const path = reconstructPath(currentId);
+          highlightPath(path, colors.secondary);
+          path.forEach((nodeId) => {
+            particleSystem.colorNode(
+              nodeId,
+              nodeId === startId ? colors.primary : colors.secondary
+            );
+          });
+          safeSetCaption(`A* found optimal path: ${path.join(" -> ")}`);
+          return;
+        }
+
+        closedSet.add(currentId);
+        if (currentId !== startId && currentId !== targetId) {
+          particleSystem.colorNode(currentId, colors.visited);
+        }
+
+        const neighbors = particleSystem.getNeighbors(currentId);
+        for (const neighbor of neighbors) {
+          if (cancelledRef.current) {
+            return;
+          }
+
+          if (closedSet.has(neighbor.id)) {
+            highlightEdge(currentId, neighbor.id, colors.pruned);
+            safeSetCaption(`A* skipping closed node ${neighbor.id}`);
+            await wait(500);
+            if (cancelledRef.current) {
+              return;
+            }
+            highlightEdge(currentId, neighbor.id, colors.visited);
+            continue;
+          }
+
+          const tentativeGScore =
+            (gScore.get(currentId) ?? Infinity) +
+            particleSystem.getEdgeWeight(currentId, neighbor.id);
+
+          if (!openSet.has(neighbor.id)) {
+            openSet.add(neighbor.id);
+            openList.push(neighbor.id);
+          } else if (tentativeGScore >= (gScore.get(neighbor.id) ?? Infinity)) {
+            highlightEdge(currentId, neighbor.id, colors.pruned);
+            safeSetCaption(
+              `A* keeping better path for ${neighbor.id}, current edge discarded`
+            );
+            await wait(500);
+            if (cancelledRef.current) {
+              return;
+            }
+            highlightEdge(currentId, neighbor.id, colors.visited);
+            continue;
+          }
+
+          cameFrom.set(neighbor.id, currentId);
+          gScore.set(neighbor.id, tentativeGScore);
+          fScore.set(neighbor.id, tentativeGScore + heuristic(neighbor.id));
+
+          highlightEdge(currentId, neighbor.id, colors.info);
+          if (neighbor.id !== targetId) {
+            particleSystem.colorNode(neighbor.id, colors.info);
+          }
+
+          const pathPreview = reconstructPath(neighbor.id);
+          safeSetCaption(
+            `A* updating path via ${neighbor.id}: ${pathPreview.join(" -> ")}`
+          );
+          await wait(500);
+          if (cancelledRef.current) {
+            return;
+          }
+
+          highlightEdge(currentId, neighbor.id, colors.visited);
+        }
+      }
+
+      if (!cancelledRef.current) {
+        safeSetCaption(
+          `A* could not find a path from ${startId} to ${targetId}.`
+        );
+      }
+    };
+
     const animateCameraToNode = async (
       nodeId: string,
       position: [number, number, number] = [0, 0, 10]
@@ -426,6 +594,14 @@ function Scene() {
     }
 
     await runDfsVisualization("A", "T");
+
+    if (await waitOrCancelled(1000)) {
+      return () => {
+        particleSystem.clear();
+      };
+    }
+
+    await runAStarVisualization("A", "T");
 
     return () => {
       particleSystem.clear();
