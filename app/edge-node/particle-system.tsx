@@ -401,6 +401,10 @@ export class ParticleSystem {
     return edge.weight;
   }
 
+  public getAllNodes() {
+    return [...this.nodes];
+  }
+
   public syncLabelSprites() {
     if (!this.labelsNeedSync) {
       return;

@@ -262,6 +262,157 @@ function Scene() {
       }
     };
 
+    const runDijkstraVisualization = async (
+      startId: string,
+      targetId: string
+    ) => {
+      particleSystem.resetNodeColors(colors.success);
+      particleSystem.resetEdgeColors(colors.light);
+      particleSystem.colorNode(startId, colors.primary);
+      particleSystem.colorNode(targetId, colors.secondary);
+
+      const distances = new Map<string, number>();
+      const visited = new Set<string>();
+      const previous = new Map<string, string>();
+
+      const queue: string[] = [];
+
+      particleSystem.labelSprites.forEach((sprite, id) => {
+        sprite.visible = false;
+      });
+
+      const allNodes = particleSystem.getAllNodes();
+      allNodes.forEach((node) => {
+        const distance = node.id === startId ? 0 : Infinity;
+        distances.set(node.id, distance);
+        queue.push(node.id);
+      });
+
+      const updateDistanceIndicator = (nodeId: string, value: number) => {
+        particleSystem.colorNode(
+          nodeId,
+          nodeId === startId
+            ? colors.primary
+            : nodeId === targetId
+            ? colors.secondary
+            : colors.info
+        );
+        safeSetCaption(`Dijkstra distance for ${nodeId}: ${value.toFixed(1)}`);
+      };
+
+      safeSetCaption(`Starting Dijkstra from ${startId} to ${targetId}`);
+
+      while (queue.length > 0 && !cancelledRef.current) {
+        queue.sort(
+          (a, b) =>
+            (distances.get(a) ?? Infinity) - (distances.get(b) ?? Infinity)
+        );
+
+        const current = queue.shift()!;
+
+        if ((distances.get(current) ?? Infinity) === Infinity) {
+          break;
+        }
+
+        if (current !== startId && current !== targetId) {
+          particleSystem.colorNode(current, colors.primary);
+        }
+
+        safeSetCaption(
+          `Dijkstra dequeued ${current} (distance ${(
+            distances.get(current) ?? Infinity
+          ).toFixed(1)})`
+        );
+        await wait(500);
+        if (cancelledRef.current) {
+          return;
+        }
+
+        if (current === targetId) {
+          const path: string[] = [];
+          let c: string | undefined = current;
+          while (c) {
+            path.unshift(c);
+            c = previous.get(c);
+          }
+          highlightPath(path, colors.secondary);
+          path.forEach((nodeId) => {
+            particleSystem.colorNode(
+              nodeId,
+              nodeId === startId ? colors.primary : colors.secondary
+            );
+          });
+          safeSetCaption(
+            `Dijkstra found shortest path: ${path.join(" -> ")} (distance ${(
+              distances.get(targetId) ?? Infinity
+            ).toFixed(1)})`
+          );
+          return;
+        }
+
+        visited.add(current);
+        const neighbors = particleSystem.getNeighbors(current);
+
+        for (const neighbor of neighbors) {
+          if (cancelledRef.current) {
+            return;
+          }
+
+          if (visited.has(neighbor.id)) {
+            highlightEdge(current, neighbor.id, colors.visited);
+            continue;
+          }
+
+          const edgeWeight = particleSystem.getEdgeWeight(current, neighbor.id);
+          const tentativeDistance =
+            (distances.get(current) ?? Infinity) + edgeWeight;
+
+          highlightEdge(current, neighbor.id, colors.info);
+          safeSetCaption(
+            `Dijkstra relaxing edge ${current} -> ${neighbor.id} (w=${edgeWeight})`
+          );
+          await wait(500);
+          if (cancelledRef.current) {
+            return;
+          }
+
+          if (tentativeDistance < (distances.get(neighbor.id) ?? Infinity)) {
+            distances.set(neighbor.id, tentativeDistance);
+            previous.set(neighbor.id, current);
+            updateDistanceIndicator(neighbor.id, tentativeDistance);
+
+            highlightEdge(current, neighbor.id, colors.secondary);
+            safeSetCaption(
+              `Better path to ${neighbor.id}: ${tentativeDistance.toFixed(1)}`
+            );
+            await wait(500);
+            if (cancelledRef.current) {
+              return;
+            }
+          } else {
+            highlightEdge(current, neighbor.id, colors.pruned);
+            safeSetCaption(
+              `Existing path to ${neighbor.id} is shorter; edge discarded`
+            );
+            await wait(500);
+            if (cancelledRef.current) {
+              return;
+            }
+          }
+
+          highlightEdge(current, neighbor.id, colors.visited);
+        }
+
+        if (current !== startId && current !== targetId) {
+          particleSystem.colorNode(current, colors.visited);
+        }
+      }
+
+      safeSetCaption(
+        `Dijkstra could not find a path from ${startId} to ${targetId}.`
+      );
+    };
+
     const runAStarVisualization = async (startId: string, targetId: string) => {
       particleSystem.resetNodeColors(colors.success);
       particleSystem.resetEdgeColors(colors.light);
@@ -594,6 +745,14 @@ function Scene() {
     }
 
     await runDfsVisualization("A", "T");
+
+    if (await waitOrCancelled(1000)) {
+      return () => {
+        particleSystem.clear();
+      };
+    }
+
+    await runDijkstraVisualization("A", "T");
 
     if (await waitOrCancelled(1000)) {
       return () => {
