@@ -60,7 +60,10 @@ function Scene() {
       const processed = new Set<string>();
       const queue: string[][] = [[startId]];
 
+      particleSystem.resetNodeColors(colors.success);
       particleSystem.resetEdgeColors(colors.light);
+      particleSystem.colorNode(startId, colors.primary);
+      particleSystem.colorNode(targetId, colors.secondary);
       safeSetCaption(`Starting BFS from ${startId} to ${targetId}`);
 
       while (queue.length > 0 && !cancelledRef.current) {
@@ -153,6 +156,109 @@ function Scene() {
 
       if (!cancelledRef.current) {
         safeSetCaption(`No path found from ${startId} to ${targetId}.`);
+      }
+    };
+
+    const runDfsVisualization = async (startId: string, targetId: string) => {
+      particleSystem.resetNodeColors(colors.success);
+      particleSystem.resetEdgeColors(colors.light);
+      particleSystem.colorNode(startId, colors.primary);
+      particleSystem.colorNode(targetId, colors.secondary);
+
+      const visited = new Set<string>();
+      const stack: string[] = [];
+
+      safeSetCaption(`Starting DFS from ${startId} to ${targetId}`);
+
+      const dfs = async (
+        currentId: string,
+        path: string[]
+      ): Promise<boolean> => {
+        if (cancelledRef.current) {
+          return false;
+        }
+
+        visited.add(currentId);
+        stack.push(currentId);
+
+        if (currentId !== startId && currentId !== targetId) {
+          particleSystem.colorNode(currentId, colors.primary);
+        }
+
+        highlightPath(path, colors.primary);
+        safeSetCaption(`DFS exploring: ${path.join(" -> ")}`);
+        await wait(500);
+        if (cancelledRef.current) {
+          return false;
+        }
+
+        if (currentId === targetId) {
+          highlightPath(path, colors.secondary);
+          stack.forEach((nodeId) => {
+            particleSystem.colorNode(nodeId, colors.secondary);
+          });
+          safeSetCaption(`DFS found path: ${path.join(" -> ")}`);
+          return true;
+        }
+
+        const neighbors = particleSystem.getNeighbors(currentId);
+        for (const neighbor of neighbors) {
+          if (cancelledRef.current) {
+            return false;
+          }
+
+          if (visited.has(neighbor.id)) {
+            highlightEdge(currentId, neighbor.id, colors.pruned);
+            safeSetCaption(`DFS backtracks over visited ${neighbor.id}`);
+            await wait(500);
+            if (cancelledRef.current) {
+              return false;
+            }
+            highlightEdge(currentId, neighbor.id, colors.visited);
+            continue;
+          }
+
+          highlightEdge(currentId, neighbor.id, colors.info);
+          particleSystem.colorNode(neighbor.id, colors.info);
+          safeSetCaption(
+            `DFS dives deeper: ${[...path, neighbor.id].join(" -> ")}`
+          );
+          await wait(500);
+          if (cancelledRef.current) {
+            return false;
+          }
+
+          const found = await dfs(neighbor.id, [...path, neighbor.id]);
+          if (found) {
+            return true;
+          }
+
+          highlightEdge(currentId, neighbor.id, colors.pruned);
+          particleSystem.colorNode(neighbor.id, colors.pruned);
+          safeSetCaption(
+            `DFS backtracks from ${neighbor.id} to ${currentId}, path invalid`
+          );
+          await wait(500);
+          if (cancelledRef.current) {
+            return false;
+          }
+
+          highlightPath(path, colors.primary);
+        }
+
+        stack.pop();
+        if (currentId !== startId && currentId !== targetId) {
+          particleSystem.colorNode(currentId, colors.pruned);
+        }
+        highlightPath(path, colors.pruned);
+        safeSetCaption(`DFS backtracks to ${path.slice(0, -1).join(" -> ")}`);
+        await wait(500);
+        return false;
+      };
+
+      const found = await dfs(startId, [startId]);
+      if (!cancelledRef.current && !found) {
+        safeSetCaption(`No DFS path found from ${startId} to ${targetId}.`);
       }
     };
 
@@ -312,6 +418,14 @@ function Scene() {
     }
 
     await runBfsVisualization("A", "T");
+
+    if (await waitOrCancelled(1000)) {
+      return () => {
+        particleSystem.clear();
+      };
+    }
+
+    await runDfsVisualization("A", "T");
 
     return () => {
       particleSystem.clear();

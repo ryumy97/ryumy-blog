@@ -363,6 +363,19 @@ export class ParticleSystem {
     });
   }
 
+  public resetNodeColors(color: string) {
+    const tempColor = new THREE.Color(color);
+    this.nodes.forEach((node) => {
+      node.color = color;
+      this.colorArray[node.index * 3] = tempColor.r;
+      this.colorArray[node.index * 3 + 1] = tempColor.g;
+      this.colorArray[node.index * 3 + 2] = tempColor.b;
+    });
+
+    this.needsUpdate = true;
+    this.labelsNeedSync = true;
+  }
+
   public colorPath(path: string[], color: string) {
     if (path.length < 2) {
       return;
