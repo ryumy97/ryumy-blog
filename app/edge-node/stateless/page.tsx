@@ -42,6 +42,9 @@ function Scene() {
         }, ms);
       });
 
+    const stepDelay = 1200;
+    const captionDelay = 1500;
+
     const waitOrCancelled = async (ms: number) => {
       await wait(ms);
       return cancelledRef.current;
@@ -59,16 +62,23 @@ function Scene() {
       const seen = new Set<string>([startId]);
       const processed = new Set<string>();
       const queue: string[][] = [[startId]];
+      let stepCount = 0;
 
       particleSystem.resetNodeColors(colors.success);
       particleSystem.resetEdgeColors(colors.light);
       particleSystem.colorNode(startId, colors.primary);
       particleSystem.colorNode(targetId, colors.secondary);
-      safeSetCaption(`Starting BFS from ${startId} to ${targetId}`);
+
+      await zoomToNode(startId);
+      safeSetCaption(
+        `BFS (Breadth-First Search) explores level by level. We start at ${startId} and use a queue to explore all neighbors before going deeper.`
+      );
+      await wait(captionDelay * 2);
 
       while (queue.length > 0 && !cancelledRef.current) {
         const path = queue.shift()!;
         const currentNodeId = path[path.length - 1];
+        stepCount++;
 
         processed.add(currentNodeId);
         if (currentNodeId !== startId && currentNodeId !== targetId) {
@@ -76,8 +86,19 @@ function Scene() {
         }
 
         highlightPath(path, colors.primary);
-        safeSetCaption(`Current path: ${path.join(" -> ")}`);
-        await wait(500);
+        await zoomToNode(currentNodeId);
+
+        if (stepCount <= 3) {
+          safeSetCaption(
+            `Step ${stepCount}: Dequeue path [${path.join(
+              " -> "
+            )}]. BFS processes nodes in FIFO order - first in, first out. We're now exploring from ${currentNodeId}.`
+          );
+          await wait(captionDelay);
+        } else {
+          safeSetCaption(`Current path: ${path.join(" -> ")}`);
+          await wait(stepDelay);
+        }
         if (cancelledRef.current) {
           return;
         }
@@ -90,7 +111,11 @@ function Scene() {
               nodeId === startId ? colors.primary : colors.secondary
             );
           });
-          safeSetCaption(`Found target path: ${path.join(" -> ")}`);
+          safeSetCaption(
+            `✓ Found target! BFS guarantees the shortest path (by number of edges): ${path.join(
+              " -> "
+            )}`
+          );
           return;
         }
 
@@ -98,17 +123,33 @@ function Scene() {
 
         const neighbors = particleSystem.getNeighbors(currentNodeId);
 
-        for (const neighbor of neighbors) {
+        if (stepCount <= 3 && neighbors.length > 0) {
+          safeSetCaption(
+            `Exploring ${neighbors.length} neighbor(s) of ${currentNodeId}. BFS adds all unvisited neighbors to the queue for later processing.`
+          );
+          await wait(captionDelay);
+        }
+
+        for (let i = 0; i < neighbors.length; i++) {
+          const neighbor = neighbors[i];
           if (cancelledRef.current) {
             return;
           }
 
           if (processed.has(neighbor.id)) {
+            await zoomToEdge(currentNodeId, neighbor.id);
             highlightEdge(currentNodeId, neighbor.id, colors.pruned);
-            safeSetCaption(
-              `Already visited ${neighbor.id}, skipping this branch`
-            );
-            await wait(500);
+            if (stepCount <= 3) {
+              safeSetCaption(
+                `Skipping ${neighbor.id} - already processed. BFS avoids revisiting nodes to prevent infinite loops.`
+              );
+              await wait(captionDelay);
+            } else {
+              safeSetCaption(
+                `Already visited ${neighbor.id}, skipping this branch`
+              );
+              await wait(stepDelay);
+            }
             if (cancelledRef.current) {
               return;
             }
@@ -117,11 +158,19 @@ function Scene() {
           }
 
           if (seen.has(neighbor.id)) {
+            await zoomToEdge(currentNodeId, neighbor.id);
             highlightEdge(currentNodeId, neighbor.id, colors.info);
-            safeSetCaption(
-              `Node ${neighbor.id} is already in the frontier queue`
-            );
-            await wait(500);
+            if (stepCount <= 3) {
+              safeSetCaption(
+                `${neighbor.id} is already in the queue. BFS will process it later when we dequeue its path.`
+              );
+              await wait(captionDelay);
+            } else {
+              safeSetCaption(
+                `Node ${neighbor.id} is already in the frontier queue`
+              );
+              await wait(stepDelay);
+            }
             if (cancelledRef.current) {
               return;
             }
@@ -131,6 +180,7 @@ function Scene() {
           const nextPath = [...path, neighbor.id];
 
           highlightPath(path, colors.primary);
+          await zoomToEdge(currentNodeId, neighbor.id);
           highlightEdge(currentNodeId, neighbor.id, colors.info);
 
           if (neighbor.id !== targetId) {
@@ -139,8 +189,17 @@ function Scene() {
             particleSystem.colorNode(neighbor.id, colors.secondary);
           }
 
-          safeSetCaption(`Checking next path: ${nextPath.join(" -> ")}`);
-          await wait(500);
+          if (stepCount <= 3 && i === 0) {
+            safeSetCaption(
+              `Adding path [${nextPath.join(
+                " -> "
+              )}] to queue. This path will be explored after all paths at the current level are processed.`
+            );
+            await wait(captionDelay);
+          } else {
+            safeSetCaption(`Checking next path: ${nextPath.join(" -> ")}`);
+            await wait(stepDelay);
+          }
           if (cancelledRef.current) {
             return;
           }
@@ -167,17 +226,24 @@ function Scene() {
 
       const visited = new Set<string>();
       const stack: string[] = [];
+      let stepCount = 0;
 
-      safeSetCaption(`Starting DFS from ${startId} to ${targetId}`);
+      await zoomToNode(startId);
+      safeSetCaption(
+        `DFS (Depth-First Search) explores as far as possible along each branch before backtracking. Unlike BFS, DFS uses a stack (LIFO) to go deep first.`
+      );
+      await wait(captionDelay * 2);
 
       const dfs = async (
         currentId: string,
-        path: string[]
+        path: string[],
+        depth: number = 0
       ): Promise<boolean> => {
         if (cancelledRef.current) {
           return false;
         }
 
+        stepCount++;
         visited.add(currentId);
         stack.push(currentId);
 
@@ -186,8 +252,19 @@ function Scene() {
         }
 
         highlightPath(path, colors.primary);
-        safeSetCaption(`DFS exploring: ${path.join(" -> ")}`);
-        await wait(500);
+        await zoomToNode(currentId);
+
+        if (stepCount <= 3) {
+          safeSetCaption(
+            `Step ${stepCount}: DFS visits ${currentId} at depth ${depth}. We mark it visited and push it onto the recursion stack. Current path: [${path.join(
+              " -> "
+            )}]`
+          );
+          await wait(captionDelay);
+        } else {
+          safeSetCaption(`DFS exploring: ${path.join(" -> ")}`);
+          await wait(stepDelay);
+        }
         if (cancelledRef.current) {
           return false;
         }
@@ -197,20 +274,39 @@ function Scene() {
           stack.forEach((nodeId) => {
             particleSystem.colorNode(nodeId, colors.secondary);
           });
-          safeSetCaption(`DFS found path: ${path.join(" -> ")}`);
+          safeSetCaption(
+            `✓ DFS found a path: ${path.join(
+              " -> "
+            )}. Note: DFS doesn't guarantee the shortest path, just any path.`
+          );
           return true;
         }
 
         const neighbors = particleSystem.getNeighbors(currentId);
+        if (stepCount <= 3 && neighbors.length > 0) {
+          safeSetCaption(
+            `DFS will recursively explore ${neighbors.length} unvisited neighbor(s). It goes deep into one branch before trying others.`
+          );
+          await wait(captionDelay);
+        }
+
         for (const neighbor of neighbors) {
           if (cancelledRef.current) {
             return false;
           }
 
           if (visited.has(neighbor.id)) {
+            await zoomToEdge(currentId, neighbor.id);
             highlightEdge(currentId, neighbor.id, colors.pruned);
-            safeSetCaption(`DFS backtracks over visited ${neighbor.id}`);
-            await wait(500);
+            if (stepCount <= 3) {
+              safeSetCaption(
+                `Skipping ${neighbor.id} - already visited. DFS avoids cycles by not revisiting nodes.`
+              );
+              await wait(captionDelay);
+            } else {
+              safeSetCaption(`DFS backtracks over visited ${neighbor.id}`);
+              await wait(stepDelay);
+            }
             if (cancelledRef.current) {
               return false;
             }
@@ -218,27 +314,52 @@ function Scene() {
             continue;
           }
 
+          await zoomToEdge(currentId, neighbor.id);
           highlightEdge(currentId, neighbor.id, colors.info);
           particleSystem.colorNode(neighbor.id, colors.info);
-          safeSetCaption(
-            `DFS dives deeper: ${[...path, neighbor.id].join(" -> ")}`
-          );
-          await wait(500);
+          if (stepCount <= 3) {
+            safeSetCaption(
+              `DFS dives deeper to ${
+                neighbor.id
+              }. Unlike BFS, we immediately recurse instead of queuing. New path: [${[
+                ...path,
+                neighbor.id,
+              ].join(" -> ")}]`
+            );
+            await wait(captionDelay);
+          } else {
+            safeSetCaption(
+              `DFS dives deeper: ${[...path, neighbor.id].join(" -> ")}`
+            );
+            await wait(stepDelay);
+          }
           if (cancelledRef.current) {
             return false;
           }
 
-          const found = await dfs(neighbor.id, [...path, neighbor.id]);
+          const found = await dfs(
+            neighbor.id,
+            [...path, neighbor.id],
+            depth + 1
+          );
           if (found) {
             return true;
           }
 
+          await zoomToEdge(currentId, neighbor.id);
           highlightEdge(currentId, neighbor.id, colors.pruned);
           particleSystem.colorNode(neighbor.id, colors.pruned);
-          safeSetCaption(
-            `DFS backtracks from ${neighbor.id} to ${currentId}, path invalid`
-          );
-          await wait(500);
+          if (stepCount <= 3) {
+            safeSetCaption(
+              `Backtracking: Path through ${neighbor.id} didn't lead to target. DFS pops from stack and tries next neighbor.`
+            );
+            await wait(captionDelay);
+          } else {
+            safeSetCaption(
+              `DFS backtracks from ${neighbor.id} to ${currentId}, path invalid`
+            );
+            await wait(stepDelay);
+          }
           if (cancelledRef.current) {
             return false;
           }
@@ -251,12 +372,19 @@ function Scene() {
           particleSystem.colorNode(currentId, colors.pruned);
         }
         highlightPath(path, colors.pruned);
-        safeSetCaption(`DFS backtracks to ${path.slice(0, -1).join(" -> ")}`);
-        await wait(500);
+        if (stepCount <= 3) {
+          safeSetCaption(
+            `All neighbors explored from ${currentId}. Backtracking to parent node.`
+          );
+          await wait(captionDelay);
+        } else {
+          safeSetCaption(`DFS backtracks to ${path.slice(0, -1).join(" -> ")}`);
+          await wait(stepDelay);
+        }
         return false;
       };
 
-      const found = await dfs(startId, [startId]);
+      const found = await dfs(startId, [startId], 0);
       if (!cancelledRef.current && !found) {
         safeSetCaption(`No DFS path found from ${startId} to ${targetId}.`);
       }
@@ -276,6 +404,7 @@ function Scene() {
       const previous = new Map<string, string>();
 
       const queue: string[] = [];
+      let stepCount = 0;
 
       particleSystem.labelSprites.forEach((sprite, id) => {
         sprite.visible = false;
@@ -300,7 +429,11 @@ function Scene() {
         safeSetCaption(`Dijkstra distance for ${nodeId}: ${value.toFixed(1)}`);
       };
 
-      safeSetCaption(`Starting Dijkstra from ${startId} to ${targetId}`);
+      await zoomToNode(startId);
+      safeSetCaption(
+        `Dijkstra's algorithm finds the shortest path by weight. We initialize all distances to ∞ except the start (distance = 0). We always process the unvisited node with the smallest distance first.`
+      );
+      await wait(captionDelay * 2);
 
       while (queue.length > 0 && !cancelledRef.current) {
         queue.sort(
@@ -309,6 +442,7 @@ function Scene() {
         );
 
         const current = queue.shift()!;
+        stepCount++;
 
         if ((distances.get(current) ?? Infinity) === Infinity) {
           break;
@@ -318,12 +452,24 @@ function Scene() {
           particleSystem.colorNode(current, colors.primary);
         }
 
-        safeSetCaption(
-          `Dijkstra dequeued ${current} (distance ${(
-            distances.get(current) ?? Infinity
-          ).toFixed(1)})`
-        );
-        await wait(500);
+        await zoomToNode(current);
+        if (stepCount <= 3) {
+          safeSetCaption(
+            `Step ${stepCount}: Select node ${current} with smallest distance (${(
+              distances.get(current) ?? Infinity
+            ).toFixed(
+              1
+            )}). Dijkstra's greedy choice: always process the closest unvisited node first.`
+          );
+          await wait(captionDelay);
+        } else {
+          safeSetCaption(
+            `Dijkstra dequeued ${current} (distance ${(
+              distances.get(current) ?? Infinity
+            ).toFixed(1)})`
+          );
+          await wait(stepDelay);
+        }
         if (cancelledRef.current) {
           return;
         }
@@ -343,15 +489,24 @@ function Scene() {
             );
           });
           safeSetCaption(
-            `Dijkstra found shortest path: ${path.join(" -> ")} (distance ${(
-              distances.get(targetId) ?? Infinity
-            ).toFixed(1)})`
+            `✓ Dijkstra found shortest path by weight: ${path.join(
+              " -> "
+            )} (total distance: ${(distances.get(targetId) ?? Infinity).toFixed(
+              1
+            )}). This is guaranteed to be optimal!`
           );
           return;
         }
 
         visited.add(current);
         const neighbors = particleSystem.getNeighbors(current);
+
+        if (stepCount <= 3 && neighbors.length > 0) {
+          safeSetCaption(
+            `Relaxing edges from ${current}: For each neighbor, we check if going through ${current} gives a shorter path. This is called "edge relaxation".`
+          );
+          await wait(captionDelay);
+        }
 
         for (const neighbor of neighbors) {
           if (cancelledRef.current) {
@@ -367,11 +522,25 @@ function Scene() {
           const tentativeDistance =
             (distances.get(current) ?? Infinity) + edgeWeight;
 
+          await zoomToEdge(current, neighbor.id);
           highlightEdge(current, neighbor.id, colors.info);
-          safeSetCaption(
-            `Dijkstra relaxing edge ${current} -> ${neighbor.id} (w=${edgeWeight})`
-          );
-          await wait(500);
+          if (stepCount <= 3) {
+            safeSetCaption(
+              `Relaxing edge ${current} → ${
+                neighbor.id
+              } (weight: ${edgeWeight}). New distance via ${current}: ${tentativeDistance.toFixed(
+                1
+              )}. Current best: ${(
+                distances.get(neighbor.id) ?? Infinity
+              ).toFixed(1)}`
+            );
+            await wait(captionDelay);
+          } else {
+            safeSetCaption(
+              `Dijkstra relaxing edge ${current} -> ${neighbor.id} (w=${edgeWeight})`
+            );
+            await wait(stepDelay);
+          }
           if (cancelledRef.current) {
             return;
           }
@@ -382,19 +551,39 @@ function Scene() {
             updateDistanceIndicator(neighbor.id, tentativeDistance);
 
             highlightEdge(current, neighbor.id, colors.secondary);
-            safeSetCaption(
-              `Better path to ${neighbor.id}: ${tentativeDistance.toFixed(1)}`
-            );
-            await wait(500);
+            if (stepCount <= 3) {
+              safeSetCaption(
+                `✓ Better path found! Update ${
+                  neighbor.id
+                }'s distance to ${tentativeDistance.toFixed(
+                  1
+                )}. We record that we reached ${neighbor.id} from ${current}.`
+              );
+              await wait(captionDelay);
+            } else {
+              safeSetCaption(
+                `Better path to ${neighbor.id}: ${tentativeDistance.toFixed(1)}`
+              );
+              await wait(stepDelay);
+            }
             if (cancelledRef.current) {
               return;
             }
           } else {
             highlightEdge(current, neighbor.id, colors.pruned);
-            safeSetCaption(
-              `Existing path to ${neighbor.id} is shorter; edge discarded`
-            );
-            await wait(500);
+            if (stepCount <= 3) {
+              safeSetCaption(
+                `Existing path to ${neighbor.id} (${(
+                  distances.get(neighbor.id) ?? Infinity
+                ).toFixed(1)}) is shorter. Discard this edge - no improvement.`
+              );
+              await wait(captionDelay);
+            } else {
+              safeSetCaption(
+                `Existing path to ${neighbor.id} is shorter; edge discarded`
+              );
+              await wait(stepDelay);
+            }
             if (cancelledRef.current) {
               return;
             }
@@ -462,8 +651,13 @@ function Scene() {
       gScore.set(startId, 0);
       fScore.set(startId, heuristic(startId));
 
-      safeSetCaption(`Starting A* from ${startId} to ${targetId}`);
+      await zoomToNode(startId);
+      safeSetCaption(
+        `A* combines Dijkstra's actual cost (g) with a heuristic estimate (h) to the target. f(n) = g(n) + h(n). The heuristic guides us toward the target, making A* faster than Dijkstra while still finding optimal paths.`
+      );
+      await wait(captionDelay * 2);
 
+      let stepCount = 0;
       while (openList.length > 0 && !cancelledRef.current) {
         updateOpenColors();
 
@@ -482,17 +676,29 @@ function Scene() {
 
         openList.splice(currentIndex, 1);
         openSet.delete(currentId);
+        stepCount++;
 
         if (currentId !== startId && currentId !== targetId) {
           particleSystem.colorNode(currentId, colors.primary);
         }
 
-        safeSetCaption(
-          `A* exploring ${currentId} (f=${(
-            fScore.get(currentId) ?? Infinity
-          ).toFixed(2)})`
-        );
-        await wait(500);
+        await zoomToNode(currentId);
+        const g = gScore.get(currentId) ?? Infinity;
+        const h = heuristic(currentId);
+        const f = fScore.get(currentId) ?? Infinity;
+        if (stepCount <= 3) {
+          safeSetCaption(
+            `Step ${stepCount}: Select ${currentId} with lowest f-score (f=${f.toFixed(
+              2
+            )} = g=${g.toFixed(2)} + h=${h.toFixed(
+              2
+            )}). A* prioritizes nodes that seem promising based on both actual cost and estimated remaining distance.`
+          );
+          await wait(captionDelay);
+        } else {
+          safeSetCaption(`A* exploring ${currentId} (f=${f.toFixed(2)})`);
+          await wait(stepDelay);
+        }
         if (cancelledRef.current) {
           return;
         }
@@ -506,7 +712,11 @@ function Scene() {
               nodeId === startId ? colors.primary : colors.secondary
             );
           });
-          safeSetCaption(`A* found optimal path: ${path.join(" -> ")}`);
+          safeSetCaption(
+            `✓ A* found optimal path: ${path.join(
+              " -> "
+            )}. With an admissible heuristic, A* guarantees the shortest path while exploring fewer nodes than Dijkstra!`
+          );
           return;
         }
 
@@ -516,15 +726,30 @@ function Scene() {
         }
 
         const neighbors = particleSystem.getNeighbors(currentId);
+        if (stepCount <= 3 && neighbors.length > 0) {
+          safeSetCaption(
+            `Evaluating neighbors: For each neighbor, we calculate g (actual cost) and f (g + heuristic). We update if we found a better path.`
+          );
+          await wait(captionDelay);
+        }
+
         for (const neighbor of neighbors) {
           if (cancelledRef.current) {
             return;
           }
 
           if (closedSet.has(neighbor.id)) {
+            await zoomToEdge(currentId, neighbor.id);
             highlightEdge(currentId, neighbor.id, colors.pruned);
-            safeSetCaption(`A* skipping closed node ${neighbor.id}`);
-            await wait(500);
+            if (stepCount <= 3) {
+              safeSetCaption(
+                `Skipping ${neighbor.id} - already in closed set. A* never revisits closed nodes.`
+              );
+              await wait(captionDelay);
+            } else {
+              safeSetCaption(`A* skipping closed node ${neighbor.id}`);
+              await wait(stepDelay);
+            }
             if (cancelledRef.current) {
               return;
             }
@@ -532,19 +757,36 @@ function Scene() {
             continue;
           }
 
+          const edgeWeight = particleSystem.getEdgeWeight(
+            currentId,
+            neighbor.id
+          );
           const tentativeGScore =
-            (gScore.get(currentId) ?? Infinity) +
-            particleSystem.getEdgeWeight(currentId, neighbor.id);
+            (gScore.get(currentId) ?? Infinity) + edgeWeight;
 
           if (!openSet.has(neighbor.id)) {
             openSet.add(neighbor.id);
             openList.push(neighbor.id);
           } else if (tentativeGScore >= (gScore.get(neighbor.id) ?? Infinity)) {
+            await zoomToEdge(currentId, neighbor.id);
             highlightEdge(currentId, neighbor.id, colors.pruned);
-            safeSetCaption(
-              `A* keeping better path for ${neighbor.id}, current edge discarded`
-            );
-            await wait(500);
+            if (stepCount <= 3) {
+              safeSetCaption(
+                `Path to ${
+                  neighbor.id
+                } via ${currentId} (g=${tentativeGScore.toFixed(
+                  1
+                )}) is not better than existing (g=${(
+                  gScore.get(neighbor.id) ?? Infinity
+                ).toFixed(1)}). Discard this edge.`
+              );
+              await wait(captionDelay);
+            } else {
+              safeSetCaption(
+                `A* keeping better path for ${neighbor.id}, current edge discarded`
+              );
+              await wait(stepDelay);
+            }
             if (cancelledRef.current) {
               return;
             }
@@ -554,18 +796,33 @@ function Scene() {
 
           cameFrom.set(neighbor.id, currentId);
           gScore.set(neighbor.id, tentativeGScore);
-          fScore.set(neighbor.id, tentativeGScore + heuristic(neighbor.id));
+          const hNeighbor = heuristic(neighbor.id);
+          fScore.set(neighbor.id, tentativeGScore + hNeighbor);
 
+          await zoomToEdge(currentId, neighbor.id);
           highlightEdge(currentId, neighbor.id, colors.info);
           if (neighbor.id !== targetId) {
             particleSystem.colorNode(neighbor.id, colors.info);
           }
 
           const pathPreview = reconstructPath(neighbor.id);
-          safeSetCaption(
-            `A* updating path via ${neighbor.id}: ${pathPreview.join(" -> ")}`
-          );
-          await wait(500);
+          if (stepCount <= 3) {
+            safeSetCaption(
+              `✓ Better path to ${
+                neighbor.id
+              }! Update: g=${tentativeGScore.toFixed(1)}, h=${hNeighbor.toFixed(
+                1
+              )}, f=${(tentativeGScore + hNeighbor).toFixed(
+                1
+              )}. Path: [${pathPreview.join(" -> ")}]`
+            );
+            await wait(captionDelay);
+          } else {
+            safeSetCaption(
+              `A* updating path via ${neighbor.id}: ${pathPreview.join(" -> ")}`
+            );
+            await wait(stepDelay);
+          }
           if (cancelledRef.current) {
             return;
           }
@@ -600,6 +857,62 @@ function Scene() {
 
       dataRef.current.position = position;
       dataRef.current.target = node.position;
+    };
+
+    const zoomToNode = async (nodeId: string) => {
+      const node = particleSystem.getNode(nodeId);
+      if (!node) return;
+
+      // Calculate a better camera position that shows context around the node
+      // Position camera at an angle and distance that shows surrounding nodes
+      const distance = 5; // Increased distance for better view
+      const angle = Math.PI / 6; // 30 degrees elevation
+
+      const offset: [number, number, number] = [
+        node.position[0],
+        node.position[1] + distance * Math.sin(angle),
+        node.position[2] + distance * Math.cos(angle),
+      ];
+      await animateCameraToNode(nodeId, offset);
+    };
+
+    const zoomToEdge = async (fromId: string, toId: string) => {
+      const from = particleSystem.getNode(fromId);
+      const to = particleSystem.getNode(toId);
+      if (!from || !to) return;
+
+      const midPoint: [number, number, number] = [
+        (from.position[0] + to.position[0]) / 2,
+        (from.position[1] + to.position[1]) / 2,
+        (from.position[2] + to.position[2]) / 2,
+      ];
+
+      // Calculate edge length to determine appropriate camera distance
+      const edgeLength = Math.sqrt(
+        Math.pow(to.position[0] - from.position[0], 2) +
+          Math.pow(to.position[1] - from.position[1], 2) +
+          Math.pow(to.position[2] - from.position[2], 2)
+      );
+
+      const distance = Math.max(edgeLength * 1.5, 4); // At least 4 units away
+      const angle = Math.PI / 6; // 30 degrees elevation
+
+      const cameraPos: [number, number, number] = [
+        midPoint[0],
+        midPoint[1] + distance * Math.sin(angle),
+        midPoint[2] + distance * Math.cos(angle),
+      ];
+
+      await animateCamera(
+        camera,
+        dataRef.current.position,
+        dataRef.current.target,
+        cameraPos,
+        midPoint
+      );
+
+      dataRef.current.position = cameraPos;
+      dataRef.current.target = midPoint;
     };
 
     await animateCamera(
@@ -730,7 +1043,7 @@ function Scene() {
     dataRef.current.position = [0, 0, 10];
     dataRef.current.target = [0, 0, 0];
 
-    if (await waitOrCancelled(500)) {
+    if (await waitOrCancelled(stepDelay)) {
       return () => {
         particleSystem.clear();
       };
@@ -808,7 +1121,7 @@ export default function Page() {
     <Canvas
       id="edge-node-canvas"
       className="fixed inset-0 h-full w-full"
-      camera={{ position: [4, 3, 6], fov: 45 }}
+      camera={{ position: [4, 3, 6], fov: 45, near: 0.1, far: 10000 }}
     >
       <color attach="background" args={["#2e323f"]} />
       <ambientLight intensity={0.4} />

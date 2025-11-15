@@ -146,11 +146,11 @@ export function PointsScene({
 
   return (
     <>
-      <points ref={pointsRef}>
+      <points ref={pointsRef} frustumCulled={false}>
         <bufferGeometry ref={pointsGeometryRef} />
         <primitive object={pointsMaterial} attach="material" />
       </points>
-      <lineSegments>
+      <lineSegments frustumCulled={false}>
         <bufferGeometry ref={linesGeometryRef} />
         <lineBasicMaterial ref={linesMaterialRef} linewidth={1} vertexColors />
       </lineSegments>
